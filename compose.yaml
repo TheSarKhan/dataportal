@@ -1,0 +1,42 @@
+#services:
+#  users_service:
+#    container_name: user
+#    image: postgres
+#    environment:
+#      POSTGRES_USER: root
+#      POSTGRES_PASSWORD: root
+#      POSTGRES_DB: User
+#    ports:
+#      - '5450:5432'
+#    volumes:
+#      - UserData:/var/lib/postgresql/data
+#    networks:
+#      - dataportal
+#volumes:
+#  UserData: {}
+#
+#
+#
+#  version: '3.8'
+#
+  services:
+    users_service:
+      container_name: users
+      image: postgres:latest
+      environment:
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: root
+        POSTGRES_DB: User
+      ports:
+        - '5450:5432'
+      volumes:
+        - UserData:/var/lib/postgresql/data
+      networks:
+        - dataportal_network
+
+  volumes:
+    UserData: {}
+
+  networks:
+    dataportal_network:
+      driver: bridge
