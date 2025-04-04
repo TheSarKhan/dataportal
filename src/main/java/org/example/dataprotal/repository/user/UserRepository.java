@@ -1,4 +1,4 @@
-package org.example.dataprotal.model.user.repository;
+package org.example.dataprotal.repository.user;
 
 import org.example.dataprotal.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

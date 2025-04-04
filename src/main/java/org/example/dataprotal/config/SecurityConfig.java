@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Modern CORS yapılandırması
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll() // Swagger izinleri
-                        .requestMatchers("/api/v1/auth/**","/error").permitAll() // Auth ve Course endpoint'leri açık
+                        .requestMatchers("/api/v1/auth/**","/error","/api/v1/company/**","api/v1/company/export-excel").permitAll() // Auth ve Course endpoint'leri açık
                         .anyRequest().authenticated() // Diğer tüm istekler kimlik doğrulaması gerektiriyor
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // JwtFilter, kimlik doğrulamadan önce çalışacak

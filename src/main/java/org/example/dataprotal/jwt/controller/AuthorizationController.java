@@ -11,15 +11,13 @@ import org.example.dataprotal.jwt.dto.response.TokenResponse;
 import org.example.dataprotal.jwt.JwtUtil;
 import org.example.dataprotal.jwt.service.service.AuthenticationService;
 import org.example.dataprotal.model.user.User;
-import org.example.dataprotal.model.user.repository.UserRepository;
+import org.example.dataprotal.repository.user.UserRepository;
 import org.example.dataprotal.redis.RedisService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -30,11 +28,11 @@ public class AuthorizationController {
 
     // private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationService authService;
     private final RedisService redisService;
     private final AuthenticationService authenticationService;
+    private final UserRepository userRepository;
 
 
     @PostMapping("/login")
@@ -116,8 +114,7 @@ public class AuthorizationController {
         String accessToken = jwtUtil.generateAccessToken(token, null);
         String refreshToken = jwtUtil.generateRefreshToken(token);
         Optional<User> userOptional = userRepository.findByEmail(email);
-        userOptional.get().setRefreshToken(refreshToken);
-        redisService.saveTokenToRedis(accessToken, email);
+         redisService.saveTokenToRedis(accessToken, email);
         return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
     }
 

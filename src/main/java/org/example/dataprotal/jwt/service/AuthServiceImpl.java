@@ -7,7 +7,7 @@ import org.example.dataprotal.jwt.dto.response.TokenResponse;
 import org.example.dataprotal.jwt.JwtUtil;
 import org.example.dataprotal.jwt.service.service.AuthenticationService;
 import org.example.dataprotal.model.user.User;
-import org.example.dataprotal.model.user.repository.UserRepository;
+import org.example.dataprotal.repository.user.UserRepository;
 
 import org.example.dataprotal.redis.RedisService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,10 +20,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthenticationService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RedisService redisService;
+    private final UserRepository userRepository;
 
 
     public TokenResponse register(RegisterDTO request) {
