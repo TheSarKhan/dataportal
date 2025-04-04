@@ -72,9 +72,13 @@ spring:
       url: jdbc:postgresql://localhost:5450/User
       username: root
       password: root
+    second:
+        url: jdbc:postgresql://localhost:5451/Company
+        username: root
+        password: root
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
   data:
     redis:
       host: localhost
