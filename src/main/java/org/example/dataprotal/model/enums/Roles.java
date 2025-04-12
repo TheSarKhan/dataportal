@@ -1,6 +1,7 @@
 package org.example.dataprotal.model.enums;
 
-public enum UserRole {
+public enum Roles {
     USER,
+    PREMIUM,
     ADMIN,
 }

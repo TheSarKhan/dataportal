@@ -1,4 +1,4 @@
-package org.example.dataprotal.jwt.dto.request;
+package org.example.dataprotal.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 //✅ İstifadəçinin email və parolunu saxlayır
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoginDTO {
+public class LoginRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Pattern(
@@ -28,4 +28,6 @@ public class LoginDTO {
             message = "Password must be at least 8 characters long, contain at least one letter and one digit"
     )
     private String password;
+    private String recaptchaResponse; // ReCAPTCHA yanıtı
+
 }

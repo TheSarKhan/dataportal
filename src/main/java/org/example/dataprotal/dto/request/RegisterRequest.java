@@ -1,4 +1,4 @@
-package org.example.dataprotal.jwt.dto.request;
+package org.example.dataprotal.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 //Yalnız qeydiyyat üçün istifadə olunur (backend-ə request kimi gedir)
-public class RegisterDTO {
+public class RegisterRequest {
     @NotBlank(message = "First name is required")
     String firstName;
 

@@ -1,4 +1,4 @@
-package org.example.dataprotal.jwt.dto.response;
+package org.example.dataprotal.dto.response;
 
 import lombok.AccessLevel;
 import lombok.Builder;
