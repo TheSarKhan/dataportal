@@ -6,11 +6,13 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import org.example.dataprotal.config.RecaptchaConfig;
 import org.example.dataprotal.dto.request.LoginRequest;
 
 import org.example.dataprotal.dto.request.RegisterRequest;
 import org.example.dataprotal.dto.response.TokenResponse;
 import org.example.dataprotal.jwt.JwtService;
+import org.example.dataprotal.redis.LoginAttemptService;
 import org.example.dataprotal.service.AuthenticationService;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.repository.user.UserRepository;
@@ -36,6 +38,8 @@ import java.util.Optional;
 public class AuthenticationController {
 
     private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttemptService;
+    private final RecaptchaConfig recaptchaConfig;
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
@@ -57,24 +61,43 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
-        // Email veya şifre boş gelirse hata döndür
-        if (StringUtils.isEmpty(loginRequest.getEmail()) || StringUtils.isEmpty(loginRequest.getPassword())) {
+        String email = loginRequest.getEmail();
+
+        if (StringUtils.isEmpty(email) || StringUtils.isEmpty(loginRequest.getPassword())) {
             return ResponseEntity.badRequest().body("Email and password are required");
         }
 
-        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
+        Optional<User> userOpt = userRepository.findByEmail(email);
 
-        // Kullanıcı veritabanında yoksa hata döndür
-        if (user.isEmpty()) {
+        // CAPTCHA gerekli mi kontrol et
+        if (loginAttemptService.isCaptchaRequired(email)) {
+            if (StringUtils.isEmpty(loginRequest.getRecaptchaToken()) ||
+                    !recaptchaConfig.verifyCaptcha(loginRequest.getRecaptchaToken())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("ReCaptcha validation failed");
+            }
+        }
+
+        // Kullanıcı yoksa bile deneme sayısı artmalı
+        if (userOpt.isEmpty()) {
+            loginAttemptService.loginFailed(email);
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
 
-        // Kullanıcı doğrulama yapılmamışsa hata döndür
-        if (!user.get().isVerified()) {
+        User user = userOpt.get();
+
+        if (!user.isVerified()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please verify your email before logging in.");
         }
-         TokenResponse tokenResponse = authenticationService.login(loginRequest);
-        return ResponseEntity.ok(tokenResponse);
+
+        try {
+            TokenResponse tokenResponse = authenticationService.login(loginRequest);
+            loginAttemptService.loginSucceeded(email); // Başarılı girişte resetle
+            return ResponseEntity.ok(tokenResponse);
+        } catch (Exception e) {
+            System.out.println("Salamlar");
+            loginAttemptService.loginFailed(email);
+            return ResponseEntity.badRequest().body("Invalid email or password");
+        }
     }
 
 
