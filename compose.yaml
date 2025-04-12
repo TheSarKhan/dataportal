@@ -21,9 +21,23 @@
         - UserData:/var/lib/postgresql/data
       networks:
         - dataportal_network
+    reports_service:
+      container_name: reports
+      image: postgres:latest
+      environment:
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: root
+        POSTGRES_DB: Report
+      ports:
+        - '5451:5432'
+      volumes:
+        - ReportData:/var/lib/postgresql/data
+      networks:
+        - dataportal_network
 
   volumes:
     UserData: {}
+    ReportData: {}
     redis_data: {}
 
   networks:

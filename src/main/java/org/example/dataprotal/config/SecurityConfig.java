@@ -94,7 +94,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/api/v1/stories/**", "/api/v1/stories/like/story-id",
-                                "/api/v1/auth/google-login", "/login", "/api/v1/product",
+                                "/api/v1/auth/google-login", "/login", "/api/v1/report/**",
                                 "/api/v1/auth/email/consultation", "/api/v1/auth/email/appeal",
                                 "/api/v1/auth/**", "/api/v1/auth/refresh"
                         ).permitAll()
