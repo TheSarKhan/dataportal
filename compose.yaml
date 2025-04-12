@@ -1,25 +1,13 @@
-#services:
-#  users_service:
-#    container_name: user
-#    image: postgres
-#    environment:
-#      POSTGRES_USER: root
-#      POSTGRES_PASSWORD: root
-#      POSTGRES_DB: User
-#    ports:
-#      - '5450:5432'
-#    volumes:
-#      - UserData:/var/lib/postgresql/data
-#    networks:
-#      - dataportal
-#volumes:
-#  UserData: {}
-#
-#
-#
-#  version: '3.8'
-#
   services:
+    redis:
+      image: redis:7.2
+      container_name: redis
+      ports:
+        - '6380:6379'
+      networks:
+        - dataportal_network
+      volumes:
+        - redis_data:/data
     users_service:
       container_name: users
       image: postgres:latest
@@ -33,23 +21,11 @@
         - UserData:/var/lib/postgresql/data
       networks:
         - dataportal_network
-    company_service:
-      container_name: companies
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: Company
-      ports:
-        - '5451:5432'
-      volumes:
-        - CompanyData:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
 
   volumes:
     UserData: {}
-    CompanyData: {}
+    redis_data: {}
+
   networks:
     dataportal_network:
       driver: bridge

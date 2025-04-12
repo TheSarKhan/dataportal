@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+            color: #333;
+        }
+        .email-container {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            overflow: hidden;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+        }
+        .verification-link {
+            display: inline-block;
+            text-align: center;
+            margin-top: 30px;
+            background-color: #3498db;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .verification-link:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 40px;
+            color: #777;
+        }
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .verification-link {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <h1>Platformamıza Xoş Gəlmisiniz!</h1>
+    </div>
+    <div class="content">
+        <p>Salam!</p>
+        <p>Qeydiyyatdan keçdiyiniz üçün təşəkkür edirik. Sizi aramızda görməkdən çox məmnunuq. Qeydiyyatınızı tamamlamaq üçün, aşağıdakı düyməyə klikləyərək email adresinizi təsdiqləyin</p>
+        <a href="{verificationLink}" style="color: #f4f4f9" class="verification-link">Emaili Təsdiqlə</a>
+        <p>Əgər bu hesabı yaratmamısınızsa, zəhmət olmasa bu e-poçtu göz ardı edin.</p>
+    </div>
+    <div class="footer">
+        <p>Yardım lazımdır? <a href="{supportLink}">Dəstək komandamızla əlaqə saxlayın</a> 💬</p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class JwtUtil {
+public class JwtService {
     private final String SECRET_KEY = "067cb10737d19d7ca3cc2954c012a994674e6186b54f8b942731dd10b6d230717dbaa69524fc27ed1df64832a7e8af4aa79414802eb01600bec75f28934a4a89460fc132c54a3f20640068983ef7d63b1d46ea3e796c23874a95e4c86cbca3bebf07c97fb7047719abe72767bd78465268c6c48356ece4298e34964d9c7aca158bdd643daa53f7de666f9739c8aa713d323a2641c3c347c1df51ba687661855476475e7facb2d92d52c15e4d4badbf4164d16c41725b4c2b388d1e8b85242f54f3ce3ca37d4230cf76194798cfea1ec452a634e34e481cd5145ee3fae940c5ead453b242cf164fd47427f859c9d164d3da321c9d7f435cdb8aa57ad3e3c584f3"; // Yine properties'den alabilirsin.
 
     public String generateToken(String email) {

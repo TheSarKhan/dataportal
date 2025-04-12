@@ -1,5 +1,6 @@
 package org.example.dataprotal;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -8,6 +9,6 @@ public class DataprotalApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(DataprotalApplication.class, args);
-    }
+     }
 
 }

@@ -1,16 +1,18 @@
 package org.example.dataprotal.model.user;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.example.dataprotal.model.enums.UserRole;
+import org.example.dataprotal.model.enums.Roles;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -35,19 +37,18 @@ public class User {
     @Column(nullable = false, unique = true)
     String email;
 
-    @Column(nullable = false)
+    @Column()
     String phoneNumber;
 
     @Column(nullable = false)
     String password;
 
-    @Column(nullable = false)
+    @Column()
     String workplace;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    UserRole role=UserRole.USER; // ADMIN, GUEST_USER, USER
-
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(nullable = false)
+Set<Roles> roles=new HashSet<>();
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDateTime createdAt;
@@ -61,7 +62,7 @@ public class User {
 
     String googleId;
 
-    String imgUrl;
+    String profileImage;
 
     boolean acceptTermsOfUse;//gizllik siyaseti qebul edirsen ya yox
 

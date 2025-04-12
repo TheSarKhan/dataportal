@@ -1,10 +1,9 @@
 package org.example.dataprotal.email.service;
 
 import jakarta.mail.MessagingException;
-import org.example.dataprotal.email.dto.AppealEmail;
-import org.example.dataprotal.email.dto.ConsultationEmail;
+
+import java.io.IOException;
 
 public interface EmailService {
-    void sendConsultation(ConsultationEmail consultationEmail) throws MessagingException;
-    void sendAppeal(AppealEmail appealEmail) throws MessagingException;
+     void sendVerificationEmail(String to, String link) throws MessagingException, IOException;
 }
