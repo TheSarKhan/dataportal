@@ -26,11 +26,15 @@ import java.util.Map;
 @RequestMapping("/api/v1/report")
 @RequiredArgsConstructor
 public class ReportController {
+
+
     private final TopicRepository topicRepository;
     private final CardRepository cardRepository;
     private final CloudinaryService cloudinaryService;
     private final SubTopicRepository subTopicRepository;
 private final Cloudinary cloudinary;
+
+
     @GetMapping("/topics")
     public ResponseEntity<?> getReportTops() {
         List<Topic> topic = topicRepository.findAll();
