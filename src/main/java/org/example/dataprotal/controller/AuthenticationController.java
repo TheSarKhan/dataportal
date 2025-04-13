@@ -50,7 +50,8 @@ public class AuthenticationController {
     private final CustomOAuth2UserServiceImpl customOAuth2UserServiceImpl;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestPart RegisterRequest registerRequest, @RequestPart MultipartFile profileImage) throws IOException, MessagingException {
+    public ResponseEntity<?> register(@RequestPart RegisterRequest registerRequest,
+                                      @RequestPart MultipartFile profileImage) throws IOException, MessagingException {
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use");
         }
