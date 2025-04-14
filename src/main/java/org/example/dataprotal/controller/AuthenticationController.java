@@ -50,6 +50,8 @@ public class AuthenticationController {
     private final CustomOAuth2UserServiceImpl customOAuth2UserServiceImpl;
 
     @PostMapping("/register")
+    @Operation(summary = "Qeydiyyat üçün endpoint")
+
     public ResponseEntity<?> register(@RequestPart RegisterRequest registerRequest, @RequestPart MultipartFile profileImage) throws IOException, MessagingException {
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use");
@@ -60,6 +62,8 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
 
 
     @PostMapping("/login")
+    @Operation(summary = "Giriş üçün endpoint")
+
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         String email = loginRequest.getEmail();
 
@@ -116,11 +120,15 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
     }
 
     @GetMapping("/oauth2-failure")
+    @Operation(summary = "Giriş xətası göstərmək üçün endpoint")
+
     public ResponseEntity<String> oauth2Failure() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OAuth2 login failed.");
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh token göndərərək yeni Access və Refresh token almaq üçün endpoint")
+
     public ResponseEntity<?> refreshToken(@RequestParam String refreshToken) {
         String email = jwtService.extractEmail(refreshToken);
         System.out.println("REFRESH TOKEN: " + refreshToken);
@@ -140,6 +148,8 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
          return ResponseEntity.ok(TokenResponse.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build());
     }
     @GetMapping("/verify")
+    @Operation(summary = "Email doğrulaması üçün endpoint")
+
     public ResponseEntity<String> verifyEmail(@RequestParam String token) {
         String email = redisService.getEmailByVerificationTokenFromRedis(token);
         if (email == null) {
