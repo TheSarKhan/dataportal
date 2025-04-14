@@ -28,11 +28,15 @@ import java.util.Optional;
 @RequestMapping("/api/v1/report")
 @RequiredArgsConstructor
 public class ReportController {
+
+
     private final TopicRepository topicRepository;
     private final CardRepository cardRepository;
     private final CloudinaryService cloudinaryService;
     private final SubTopicRepository subTopicRepository;
 private final Cloudinary cloudinary;
+
+
     @GetMapping("/topics")
     @Operation(summary = "Başlıqları əldə etmək üçün endpoint")
 
