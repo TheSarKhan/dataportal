@@ -149,7 +149,6 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
     }
     @GetMapping("/verify")
     @Operation(summary = "Email doğrulaması üçün endpoint")
-
     public ResponseEntity<String> verifyEmail(@RequestParam String token) {
         String email = redisService.getEmailByVerificationTokenFromRedis(token);
         if (email == null) {
