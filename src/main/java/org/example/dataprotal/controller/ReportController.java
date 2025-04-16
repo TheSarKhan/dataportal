@@ -32,7 +32,7 @@ public class ReportController {
     private final CardRepository cardRepository;
     private final CloudinaryService cloudinaryService;
     private final SubTopicRepository subTopicRepository;
-private final Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
 
 
     @GetMapping("/topics")
@@ -53,14 +53,14 @@ private final Cloudinary cloudinary;
         return ResponseEntity.ok(cards);
     }
 
-        @PostMapping("/topic/add")
-        public ResponseEntity<?> createReportTop(@RequestPart TopicRequest topicRequest, @RequestPart MultipartFile multipartFile) throws IOException {
-            Topic topic = new Topic();
-            topic.setTopic(topicRequest.getTopic());
-            topic.setTopicIcon(cloudinaryService.uploadFile(multipartFile, "Topic"));
-            topic.generateTopicSlug();
-            return ResponseEntity.status(201).body(topicRepository.save(topic));
-        }
+    @PostMapping("/topic/add")
+    public ResponseEntity<?> createReportTop(@RequestPart TopicRequest topicRequest, @RequestPart MultipartFile multipartFile) throws IOException {
+        Topic topic = new Topic();
+        topic.setTopic(topicRequest.getTopic());
+        topic.setTopicIcon(cloudinaryService.uploadFile(multipartFile, "Topic"));
+        topic.generateTopicSlug();
+        return ResponseEntity.status(201).body(topicRepository.save(topic));
+    }
 
     @PostMapping("/subTopic/add")
     public ResponseEntity<?> createReportSub(@RequestBody SubTopicRequest subTopicRequest) {

@@ -46,9 +46,10 @@ public class User {
     @Column()
     String workplace;
 
-@JdbcTypeCode(SqlTypes.JSON)
-@Column(nullable = false)
-Set<Roles> roles=new HashSet<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false)
+    Set<Roles> roles = new HashSet<>();
+
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDateTime createdAt;

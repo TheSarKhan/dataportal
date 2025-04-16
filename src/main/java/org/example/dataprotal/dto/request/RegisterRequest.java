@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 //Yalnız qeydiyyat üçün istifadə olunur (backend-ə request kimi gedir)
 public class RegisterRequest {
+
     @NotBlank(message = "First name is required")
     String firstName;
 

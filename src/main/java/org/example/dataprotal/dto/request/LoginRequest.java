@@ -1,11 +1,11 @@
 package org.example.dataprotal.dto.request;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 // Avtorizasiya (giriş) üçün istifadə olunur
@@ -30,4 +30,20 @@ public class LoginRequest {
      String password;
      String recaptchaToken; // sadece gerektiğinde gönderilir
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AboutDto {
+
+        @NotBlank(message = "tittle must not be empty")
+        private String title;
+
+        @Column(nullable = false)
+        private String description;
+
+        @Column(name="image_url")
+        private String imageUrl;
+
+    }
 }

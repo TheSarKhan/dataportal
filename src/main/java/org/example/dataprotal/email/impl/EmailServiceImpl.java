@@ -1,4 +1,4 @@
-package org.example.dataprotal.email.service.impl;
+package org.example.dataprotal.email.impl;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -34,7 +34,7 @@ public class EmailServiceImpl implements EmailService {
 
         // HTML içeriğini al
         String htmlContent = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
-String supportLink=baseUrl+"/support";
+        String supportLink = baseUrl + "/support";
         // Dinamik olarak doğrulama linkini ekle
         htmlContent = htmlContent.replace("{verificationLink}", link);
         htmlContent = htmlContent.replace("{supportLink}", supportLink);

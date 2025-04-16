@@ -42,6 +42,10 @@ spring:
         url: jdbc:postgresql://localhost:5451/Report
         username: root
         password: root
+    third:
+        url: jdbc:postgresql://localhost:5452/About
+        username: root
+        password: root
   jpa:
     hibernate:
       ddl-auto: update

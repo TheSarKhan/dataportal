@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.request.LoginRequest;
 import org.example.dataprotal.dto.request.RegisterRequest;
 import org.example.dataprotal.dto.response.TokenResponse;
+import org.example.dataprotal.email.service.EmailService;
 import org.example.dataprotal.jwt.JwtService;
 import org.example.dataprotal.model.enums.Roles;
 import org.example.dataprotal.service.AuthenticationService;
@@ -35,7 +36,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final RedisService redisService;
     private final CloudinaryService cloudinaryService;
-    private final org.example.dataprotal.email.service.EmailService emailService;
+    private final EmailService emailService;
 
     @Value("${spring.application.base-url}")
     private String baseUrl;

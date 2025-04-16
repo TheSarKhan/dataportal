@@ -1,45 +1,59 @@
-  services:
-    redis:
-      image: redis:7.2
-      container_name: redis
-      ports:
-        - '6380:6379'
-      networks:
-        - dataportal_network
-      volumes:
-        - redis_data:/data
-    users_service:
-      container_name: users
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: User
-      ports:
-        - '5450:5432'
-      volumes:
-        - UserData:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
-    reports_service:
-      container_name: reports
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: Report
-      ports:
-        - '5451:5432'
-      volumes:
-        - ReportData:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
+services:
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - '6380:6379' # və ya '6379:6379' (application.yml ilə uyğunlaşdırın)
+    networks:
+      - dataportal_network
+    volumes:
+      - redis_data:/data
+  users_service:
+    container_name: users
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: User
+    ports:
+      - '5450:5432'
+    volumes:
+      - UserData:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
+  reports_service:
+    container_name: reports
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: Report
+    ports:
+      - '5451:5432'
+    volumes:
+      - ReportData:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
+  about_service:
+    container_name: about
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: About
+    ports:
+      - '5452:5432'
+    volumes:
+      - AboutData:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
 
-  volumes:
-    UserData: {}
-    ReportData: {}
-    redis_data: {}
+volumes:
+  UserData: {}
+  ReportData: {}
+  AboutData: {}
+  redis_data: {}
 
-  networks:
-    dataportal_network:
-      driver: bridge
+networks:
+  dataportal_network:
+    driver: bridge
