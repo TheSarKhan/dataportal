@@ -1,4 +1,4 @@
-package org.example.dataprotal.model.enums;
+package org.example.dataprotal.enums;
 
 public enum Roles {
     USER,

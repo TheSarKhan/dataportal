@@ -40,12 +40,16 @@ spring:
       username: root
       password: root
     second:
-        url: jdbc:postgresql://localhost:5451/Report
-        username: root
-        password: root
+      url: jdbc:postgresql://localhost:5451/Page
+      username: root
+      password: root
+    third:
+      url: jdbc:postgresql://localhost:5453/DataSet
+      username: root
+      password: root
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
   data:
     redis:
       host: localhost

@@ -3,7 +3,7 @@ package org.example.dataprotal.model.user;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.example.dataprotal.model.enums.Roles;
+import org.example.dataprotal.enums.Roles;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -37,18 +37,19 @@ public class User {
     @Column(nullable = false, unique = true)
     String email;
 
-    @Column()
+    @Column
     String phoneNumber;
 
     @Column(nullable = false)
     String password;
 
-    @Column()
+    @Column
     String workplace;
 
-@JdbcTypeCode(SqlTypes.JSON)
-@Column(nullable = false)
-Set<Roles> roles=new HashSet<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false)
+    Set<Roles> roles = new HashSet<>();
+
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDateTime createdAt;

@@ -93,10 +93,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/api/v1/auth/google-login", "/login", "/api/v1/report/**",
+                                "/api/v1/auth/google-login", "/login", "/api/v1/content/**","/api/v1/dataset/**", "/api/v1/card/**","/api/v1/page/**",
                                 "/api/v1/auth/email/consultation", "/api/v1/auth/email/appeal",
                                 "/api/v1/auth/**", "/api/v1/auth/refresh","/test","/api/v1/chatbot/**"
                         ).permitAll()
+//                        .requestMatchers("/api/v1/dataset/**").hasAnyRole("PREMIUM","ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

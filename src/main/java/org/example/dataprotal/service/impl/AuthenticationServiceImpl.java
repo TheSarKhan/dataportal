@@ -6,7 +6,7 @@ import org.example.dataprotal.dto.request.LoginRequest;
 import org.example.dataprotal.dto.request.RegisterRequest;
 import org.example.dataprotal.dto.response.TokenResponse;
 import org.example.dataprotal.jwt.JwtService;
-import org.example.dataprotal.model.enums.Roles;
+import org.example.dataprotal.enums.Roles;
 import org.example.dataprotal.service.AuthenticationService;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.repository.user.UserRepository;

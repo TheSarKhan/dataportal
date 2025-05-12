@@ -7,7 +7,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.response.TokenResponse;
 import org.example.dataprotal.jwt.JwtService;
-import org.example.dataprotal.model.enums.Roles;
+import org.example.dataprotal.enums.Roles;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
