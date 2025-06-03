@@ -48,13 +48,25 @@
         - DataSet:/var/lib/postgresql/data
       networks:
         - dataportal_network
-
+    chatbot_service:
+      container_name: chatbot
+      image: postgres:latest
+      environment:
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: root
+        POSTGRES_DB: Chatbot
+      ports:
+        - '5454:5432'
+      volumes:
+        - ChatBot:/var/lib/postgresql/data
+      networks:
+        - dataportal_network
   volumes:
     UserData: {}
     PageData: {}
     redis_data: {}
     DataSet: {}
-
+    ChatBot: {}
   networks:
     dataportal_network:
       driver: bridge

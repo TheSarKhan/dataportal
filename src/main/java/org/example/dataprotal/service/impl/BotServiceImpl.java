@@ -23,7 +23,7 @@ public class BotServiceImpl implements BotService {
 
     @Override
     public String askBot(String question) {
-        String url = botUrl + "/ask";
+        String url = botUrl + "/api/ask";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 

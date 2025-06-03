@@ -28,6 +28,6 @@ public class LoginRequest {
             message = "Password must be at least 8 characters long, contain at least one letter and one digit"
     )
      String password;
-     String recaptchaToken; // sadece gerektiğinde gönderilir
+     String recaptchaToken;
 
 }
