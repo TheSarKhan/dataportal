@@ -93,6 +93,10 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please verify your email before logging in.");
         }
 
+        if (!user.isActive()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please activate your account before logging in.");
+        }
+
         try {
             TokenResponse tokenResponse = authenticationService.login(loginRequest);
             loginAttemptService.loginSucceeded(email); // Başarılı girişte resetle

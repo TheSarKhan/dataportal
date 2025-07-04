@@ -6,8 +6,8 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.response.TokenResponse;
+import org.example.dataprotal.enums.Role;
 import org.example.dataprotal.jwt.JwtService;
-import org.example.dataprotal.enums.Roles;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,10 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,9 +69,7 @@ public class CustomOAuth2UserServiceImpl implements OAuth2UserService<OAuth2User
             newUser.setLastName(Optional.ofNullable(lastName).orElse("Unknown"));
             newUser.setGoogleId(googleId);
             newUser.setProfileImage(imageUrl);
-            Set<Roles> roles = new HashSet<>();
-            roles.add(Roles.USER);
-            newUser.setRoles(roles);
+            newUser.setRole(Role.USER);
             newUser.setCreatedAt(LocalDateTime.now());
             newUser.setUpdatedAt(LocalDateTime.now());
             newUser.setPassword(passwordEncoder.encode("default_password"));

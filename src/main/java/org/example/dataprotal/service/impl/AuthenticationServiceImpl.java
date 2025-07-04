@@ -5,13 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.request.LoginRequest;
 import org.example.dataprotal.dto.request.RegisterRequest;
 import org.example.dataprotal.dto.response.TokenResponse;
+import org.example.dataprotal.enums.Role;
 import org.example.dataprotal.jwt.JwtService;
-import org.example.dataprotal.enums.Roles;
-import org.example.dataprotal.service.AuthenticationService;
 import org.example.dataprotal.model.user.User;
-import org.example.dataprotal.repository.user.UserRepository;
-
 import org.example.dataprotal.redis.RedisService;
+import org.example.dataprotal.repository.user.UserRepository;
+import org.example.dataprotal.service.AuthenticationService;
 import org.example.dataprotal.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,9 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 
@@ -39,14 +36,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Value("${spring.application.base-url}")
     private String baseUrl;
+
     @Override
     public String register(RegisterRequest request, MultipartFile profileImage) throws IOException, MessagingException {
         LocalDateTime now = LocalDateTime.now();
         User user = new User();
 
-        Set<Roles> roles = new HashSet<>();
-        roles.add(Roles.USER);
-        user.setRoles(roles);
+        user.setRole(Role.USER);
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
@@ -61,9 +57,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
 
         String verificationToken = UUID.randomUUID().toString();
-        System.out.println("TOKEN "+verificationToken);
+        System.out.println("TOKEN " + verificationToken);
         redisService.saveVerificationTokenToRedis(request.getEmail(), verificationToken, 10);
-        String verificationUrl = baseUrl+"/api/v1/auth/verify?token=" + verificationToken;
+        String verificationUrl = baseUrl + "/api/v1/auth/verify?token=" + verificationToken;
         emailService.sendVerificationEmail(request.getEmail(), verificationUrl); // Mail gönderme
         return "Check your email to verify account";
     }
