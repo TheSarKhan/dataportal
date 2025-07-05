@@ -1,72 +1,85 @@
-  services:
-    redis:
-      image: redis:7.2
-      container_name: redis
-      ports:
-        - '6380:6379'
-      networks:
-        - dataportal_network
-      volumes:
-        - redis_data:/data
-    users_service:
-      container_name: users
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: User
-      ports:
-        - '5450:5432'
-      volumes:
-        - UserData:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
-    pages_service:
-      container_name: pages
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: Page
-      ports:
-        - '5451:5432'
-      volumes:
-        - PageData:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
+services:
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - '6380:6379'
+    networks:
+      - dataportal_network
+    volumes:
+      - redis_data:/data
 
-    dataset_service:
-      container_name: dataset
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: DataSet
-      ports:
-        - '5453:5432'
-      volumes:
-        - DataSet:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
-    chatbot_service:
-      container_name: chatbot
-      image: postgres:latest
-      environment:
-        POSTGRES_USER: root
-        POSTGRES_PASSWORD: root
-        POSTGRES_DB: Chatbot
-      ports:
-        - '5454:5432'
-      volumes:
-        - ChatBot:/var/lib/postgresql/data
-      networks:
-        - dataportal_network
-  volumes:
-    UserData: {}
-    PageData: {}
-    redis_data: {}
-    DataSet: {}
-    ChatBot: {}
-  networks:
-    dataportal_network:
-      driver: bridge
+  users_service:
+    container_name: users
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: User
+    ports:
+      - '5450:5432'
+    volumes:
+      - UserData:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
+
+  pages_service:
+    container_name: pages
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: Page
+    ports:
+      - '5451:5432'
+    volumes:
+      - PageData:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
+
+  dataset_service:
+    container_name: dataset
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: DataSet
+    ports:
+      - '5453:5432'
+    volumes:
+      - DataSet:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
+
+  chatbot_service:
+    container_name: chatbot
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: Chatbot
+    ports:
+      - '5454:5432'
+    volumes:
+      - ChatBot:/var/lib/postgresql/data
+    networks:
+      - dataportal_network
+
+  lingva_translate:
+    image: fossandroid/lingva-translate:latest
+    container_name: lingva
+    ports:
+      - "3000:3000"
+    networks:
+      - dataportal_network
+
+volumes:
+  UserData: { }
+  PageData: { }
+  redis_data: { }
+  DataSet: { }
+  ChatBot: { }
+
+networks:
+  dataportal_network:
+    driver: bridge

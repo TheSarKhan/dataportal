@@ -3,26 +3,22 @@ package org.example.dataprotal.model.user;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.example.dataprotal.enums.Roles;
+import org.example.dataprotal.enums.Language;
+import org.example.dataprotal.enums.Role;
+import org.example.dataprotal.enums.Subscription;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Builder
 @Entity
-@Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-
-//esas classim budur
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,18 +33,18 @@ public class User {
     @Column(nullable = false, unique = true)
     String email;
 
-    @Column
     String phoneNumber;
 
     @Column(nullable = false)
     String password;
 
-    @Column
     String workplace;
 
-    @JdbcTypeCode(SqlTypes.JSON)
+    String position;
+
     @Column(nullable = false)
-    Set<Roles> roles = new HashSet<>();
+    @Enumerated(EnumType.STRING)
+    Role role;
 
     @CreationTimestamp
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -58,13 +54,35 @@ public class User {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDateTime updatedAt;
 
-    @Column(nullable = false)//hesabin tesdiqlenib tesdiqlenmediyini bildirir (gmailden)
     boolean isVerified;
 
     String googleId;
 
     String profileImage;
 
-    boolean acceptTermsOfUse;//gizllik siyaseti qebul edirsen ya yox
+    boolean acceptTermsOfUse;
 
+    boolean isActive;
+
+    String deactivateReason;
+
+    LocalDateTime deactivateTime;
+
+    String recoveryPhoneNumber;
+
+    String recoveryEmail;
+
+    @Enumerated(EnumType.STRING)
+    Language language;
+
+    @Enumerated(EnumType.STRING)
+    Subscription subscription;
+
+    @PrePersist
+    public void prePersist() {
+        role = Role.USER;
+        subscription = Subscription.FREE;
+        language = Language.EN;
+        isActive = true;
+    }
 }
