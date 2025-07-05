@@ -5,18 +5,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-
 import org.example.dataprotal.config.RecaptchaConfig;
 import org.example.dataprotal.dto.request.LoginRequest;
-
 import org.example.dataprotal.dto.request.RegisterRequest;
 import org.example.dataprotal.dto.response.TokenResponse;
+import org.example.dataprotal.exception.UserDeactivatedException;
 import org.example.dataprotal.jwt.JwtService;
-import org.example.dataprotal.redis.LoginAttemptService;
-import org.example.dataprotal.service.AuthenticationService;
 import org.example.dataprotal.model.user.User;
-import org.example.dataprotal.repository.user.UserRepository;
+import org.example.dataprotal.redis.LoginAttemptService;
 import org.example.dataprotal.redis.RedisService;
+import org.example.dataprotal.repository.user.UserRepository;
+import org.example.dataprotal.service.AuthenticationService;
 import org.example.dataprotal.service.impl.CustomOAuth2UserServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -54,9 +52,9 @@ public class AuthenticationController {
 
     public ResponseEntity<?> register(@RequestPart RegisterRequest registerRequest, @RequestPart MultipartFile profileImage) throws IOException, MessagingException {
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use");
         }
-        String response = authenticationService.register(registerRequest,profileImage);
+        String response = authenticationService.register(registerRequest, profileImage);
         return ResponseEntity.ok(response);
     }
 
@@ -109,7 +107,6 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
     }
 
 
-
     @PostMapping("/google-login")
     @Operation(summary = "Google linki istifadə edərək asan login üçün endpoint")
     public ResponseEntity<TokenResponse> googleLogin(@RequestBody Map<String, String> body) throws Exception {
@@ -118,7 +115,10 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
         try {
             TokenResponse response = customOAuth2UserServiceImpl.processGoogleLogin(idToken);
             return ResponseEntity.ok(response);
-        } catch (GeneralSecurityException | IOException e) {
+        } catch (UserDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (GeneralSecurityException |
+                 IOException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -149,8 +149,9 @@ return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use"
         System.out.println("REFRESH TOKEN: " + newRefreshToken);
         redisService.deleteRefreshTokenFromRedis(email);
         redisService.saveRefreshTokenToRedis(email, newRefreshToken, 7); // 7 gün geçerli
-         return ResponseEntity.ok(TokenResponse.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build());
+        return ResponseEntity.ok(TokenResponse.builder().accessToken(newAccessToken).refreshToken(newRefreshToken).build());
     }
+
     @GetMapping("/verify")
     @Operation(summary = "Email doğrulaması üçün endpoint")
     public ResponseEntity<String> verifyEmail(@RequestParam String token) {

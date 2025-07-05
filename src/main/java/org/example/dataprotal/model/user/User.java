@@ -82,7 +82,7 @@ public class User {
     public void prePersist() {
         role = Role.USER;
         subscription = Subscription.FREE;
-        language = Language.AZE;
+        language = Language.EN;
         isActive = true;
     }
 }

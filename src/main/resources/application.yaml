@@ -67,8 +67,5 @@ cloudinary:
     key: 668583881613156
     secret: 7jymaVAgMxu5Pc50toz0YvwJ2ro
 
-profile:
-  deactivate-reason:
-    aze: Müvəqqəti fasilə vermək istəyirəm.Istədiyim funksiyaları tapa bilmirəm.Başqa bir hesab istifadə edirəm.Çoxlu bildiriş və ya spam alıram.Məlumatlarımın təhlükəsizliyi ilə bağlı narahatam.
-    en: I want to take a temporary break.I can't find the features I want.I'm using a different account.I'm getting too many notifications or spam.I'm concerned about the security of my data.
-    ru: Я хочу сделать временный перерыв.Я не могу найти нужные мне функции.Я использую другую учетную запись.Я получаю слишком много уведомлений или спама.Я беспокоюсь о безопасности своих данных.
+lingva-translate:
+  base-url: http://localhost:3000/api/v1

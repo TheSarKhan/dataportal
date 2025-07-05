@@ -5,8 +5,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.dataprotal.dto.response.TokenResponse;
 import org.example.dataprotal.enums.Role;
+import org.example.dataprotal.exception.UserDeactivatedException;
 import org.example.dataprotal.jwt.JwtService;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.repository.user.UserRepository;
@@ -28,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserServiceImpl implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -75,6 +78,11 @@ public class CustomOAuth2UserServiceImpl implements OAuth2UserService<OAuth2User
             newUser.setPassword(passwordEncoder.encode("default_password"));
             return userRepository.save(newUser);
         });
+
+        if (!user.isActive()) {
+            log.info("User account is deactivated: {}", user.getEmail());
+            throw new UserDeactivatedException("User account is deactivated.");
+        }
 
         // Update Google ID if it's a returning user
         if (!user.getGoogleId().equals(googleId)) {

@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.service.UserService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,13 +44,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtService.isTokenValid(jwt, email)) {
-                List<SimpleGrantedAuthority> authorities =
-                        List.of(new SimpleGrantedAuthority("ROLE_" +
-                                userService.getByEmail(email).getRole()));
+                User user = userService.getByEmail(email);
+                if (user.isActive()) {
+                    List<SimpleGrantedAuthority> authorities =
+                            List.of(new SimpleGrantedAuthority("ROLE_" +
+                                    user.getRole()));
 
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(email, null, authorities)
-                );
+                    SecurityContextHolder.getContext().setAuthentication(
+                            new UsernamePasswordAuthenticationToken(email, null, authorities)
+                    );
+                }
             }
         }
 
