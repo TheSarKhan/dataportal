@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
 import org.example.dataprotal.dto.response.*;
+import org.example.dataprotal.exception.ResourceCanNotFoundException;
 import org.example.dataprotal.model.paymenthistory.PaymentHistory;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.UserService;
@@ -97,7 +98,7 @@ public class ProfileController {
     }
 
     @GetMapping("/getMyPayments")
-    public ResponseEntity<List<PaymentHistory>> getMyPayments() {
+    public ResponseEntity<List<PaymentHistory>> getMyPayments() throws ResourceCanNotFoundException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         List<PaymentHistory> paymentHistoryByUserEmail = paymentHistoryService.getPaymentHistoryByUserEmail(email);
