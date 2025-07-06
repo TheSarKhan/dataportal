@@ -8,14 +8,16 @@ import org.example.dataprotal.dto.SubscriptionDataDto;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
 import org.example.dataprotal.dto.response.ProfileResponse;
-import org.example.dataprotal.dto.response.ProfileResponseForHeader;
 import org.example.dataprotal.dto.response.ProfileSecurityResponse;
 import org.example.dataprotal.dto.response.ProfileSettingsResponse;
+import org.example.dataprotal.dto.response.UserResponseForAdmin;
 import org.example.dataprotal.enums.Language;
+import org.example.dataprotal.enums.Role;
 import org.example.dataprotal.enums.Subscription;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.example.dataprotal.service.CloudinaryService;
+import org.example.dataprotal.service.TranslateService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +29,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.example.dataprotal.mapper.UserMapper.userToProfileResponse;
+import static org.example.dataprotal.mapper.UserMapper.userToUserResponseForAdmin;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,13 +42,15 @@ public class UserServiceImpl implements UserService {
 
     private final CloudinaryService cloudinaryService;
 
+    private final TranslateService translateService;
+
     private final MessageSource messageSource;
 
     @Override
     public User getByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(() -> {
-            log.error("User not found with email {}", email);
-            return new NoSuchElementException("User not found with email " + email);
+            log.error("User not found with email : {}", email);
+            return new NoSuchElementException("User not found with email : " + email);
         });
     }
 
@@ -60,20 +67,34 @@ public class UserServiceImpl implements UserService {
     @Override
     public ProfileResponse getCurrentProfile() throws AuthException {
         log.info("Get current profile : {}", getCurrentUser().getFirstName());
-        return mappedUserToProfileResponse(getCurrentUser());
+        return userToProfileResponse(getCurrentUser());
     }
 
     @Override
-    public ProfileResponseForHeader getProfileDataForHeader() throws AuthException {
-        User currentUser = getCurrentUser();
-        log.warn(messageSource.getMessage("hello", null, Locale.ENGLISH));
-        log.warn(messageSource.getMessage("hello", null, Locale.forLanguageTag("az")));
-        log.warn(messageSource.getMessage("hello", null, Locale.forLanguageTag("en")));
-        return new ProfileResponseForHeader(currentUser.getLanguage(), currentUser.getProfileImage());
+    public List<UserResponseForAdmin> getAllUsers() throws AuthException {
+        log.info("Get all users");
+        User admin = getCurrentUser();
+        return userRepository.findAll().stream()
+                .map(user -> getUserResponseForAdminTranslated(user, admin)).toList();
+    }
+
+    @Override
+    public UserResponseForAdmin getUserById(Long id) throws AuthException {
+        log.info("Get user by id : {}", id);
+        return getUserResponseForAdminTranslated(getById(id), getCurrentUser());
+    }
+
+    @Override
+    public User getById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> {
+            log.error("User not found with id : {}", id);
+            return new NoSuchElementException("User not found with id : " + id);
+        });
     }
 
     @Override
     public ProfileSettingsResponse getProfileSettings() throws AuthException {
+        log.info("Get profile settings");
         User currentUser = getCurrentUser();
 
         Map<Language, String> languages = new HashMap<>();
@@ -95,10 +116,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ProfileSecurityResponse getProfileSecurity() throws AuthException {
+        log.info("Get profile security");
         User currentUser = getCurrentUser();
         return new ProfileSecurityResponse(
                 currentUser.getRecoveryEmail(),
                 currentUser.getRecoveryPhoneNumber());
+    }
+
+    @Override
+    public List<UserResponseForAdmin> searchUserByName(String name) throws AuthException {
+        User admin = getCurrentUser();
+        return userRepository.searchUserByName(name).stream()
+                .map(user -> getUserResponseForAdminTranslated(user, admin)).toList();
     }
 
     @Override
@@ -112,19 +141,24 @@ public class UserServiceImpl implements UserService {
         currentUser.setPhoneNumber(request.phoneNumber());
         currentUser.setWorkplace(request.workplace());
         currentUser.setPosition(request.position());
-        return mappedUserToProfileResponse(userRepository.save(currentUser));
+        currentUser.setUpdatedAt(LocalDateTime.now());
+        return userToProfileResponse(userRepository.save(currentUser));
     }
 
     @Override
     public ProfileResponse updateLanguage(String language) throws AuthException {
         log.info("Update language : {}", language);
         User user = getCurrentUser();
+        user.setPosition(translateService.translate(user.getPosition(),
+                user.getLanguage().name().toLowerCase(),
+                language.toLowerCase()));
         user.setLanguage(Language.valueOf(language.toUpperCase()));
-        return mappedUserToProfileResponse(userRepository.save(user));
+        return userToProfileResponse(userRepository.save(user));
     }
 
     @Override
     public String deactivateProfile(String deactivateReason) throws AuthException {
+        log.info("Deactivate profile : {}", deactivateReason);
         User currentUser = getCurrentUser();
         currentUser.setActive(false);
         currentUser.setDeactivateTime(LocalDateTime.now());
@@ -135,25 +169,62 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseForAdmin deactivateUserWithId(Long id, String reason) throws AuthException {
+        log.info("Deactivate user with id : {}", id);
+        User user = getById(id);
+        user.setActive(false);
+        User admin = getCurrentUser();
+        user.setDeactivateReason(translateService.translate(reason,
+                admin.getLanguage().name().toLowerCase(),
+                user.getLanguage().name().toLowerCase()));
+        user.setDeactivateTime(LocalDateTime.now());
+        return getUserResponseForAdminTranslated(userRepository.save(user), admin);
+    }
+
+    @Override
+    public UserResponseForAdmin activateUserWithId(Long id) throws AuthException {
+        log.info("Activate user with id : {}", id);
+        User user = getById(id);
+        user.setActive(true);
+        user.setDeactivateReason(null);
+        user.setDeactivateTime(null);
+        return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+    }
+
+    @Override
+    public UserResponseForAdmin changeUserRole(Long id, String role) throws AuthException {
+        log.info("Change user role with id : {} to {}", id, role);
+        User user = getById(id);
+        user.setRole(Role.valueOf(role.toUpperCase()));
+        return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+    }
+
+    @Override
     public ProfileSecurityResponse updateSecurity(ProfileSecurityRequest request) throws AuthException {
+        log.info("Update security : {}", request);
         User currentUser = getCurrentUser();
         if (!StringUtil.isBlank(request.oldPassword()) &&
                 passwordEncoder.matches(request.oldPassword(), currentUser.getPassword())) {
             currentUser.setPassword(passwordEncoder.encode(request.newPassword()));
+            currentUser.setUpdatedAt(LocalDateTime.now());
         }
         if (!StringUtil.isBlank(request.recoveryEmail()) ||
                 !request.recoveryEmail().equals(currentUser.getRecoveryEmail())) {
             if (currentUser.getEmail().equals(request.recoveryEmail())) {
-                log.warn("Email is same with current user's email.");
-                throw new RuntimeException("Email is same with current user's email. Please change email or recovery email. (Email: " + request.recoveryEmail() + " )");
+                String errorMessage = messageSource.getMessage("recovery-email.error", null,
+                        new Locale(currentUser.getLanguage().name().toLowerCase()));
+                log.warn(errorMessage);
+                throw new RuntimeException(errorMessage + " (email: " + request.recoveryEmail() + " )");
             }
             currentUser.setRecoveryEmail(request.recoveryEmail());
         }
         if (!StringUtil.isBlank(request.recoveryPhoneNumber()) ||
                 !request.recoveryPhoneNumber().equals(currentUser.getRecoveryPhoneNumber())) {
             if (currentUser.getPhoneNumber().equals(request.recoveryPhoneNumber())) {
-                log.warn("Phone number is same with current user's phone number.");
-                throw new RuntimeException("Phone number is same with current user's phone number. Please change phone number or recovery phone number. (phone number: " + request.recoveryPhoneNumber() + " )");
+                String errorMessage = messageSource.getMessage("recovery-phone-number.error", null,
+                        new Locale(currentUser.getLanguage().name().toLowerCase()));
+                log.warn(errorMessage);
+                throw new RuntimeException(errorMessage + " (phone number: " + request.recoveryPhoneNumber() + " )");
             }
             currentUser.setRecoveryPhoneNumber(request.recoveryPhoneNumber());
         }
@@ -165,29 +236,40 @@ public class UserServiceImpl implements UserService {
 
     private Map<Subscription, SubscriptionDataDto> getSubscriptions(User currentUser) {
         Map<Subscription, SubscriptionDataDto> subscriptions = new HashMap<>();
-        for (Subscription subscription : Subscription.values()) {
+
+        Subscription subscription = currentUser.getSubscription() != null ? currentUser.getSubscription()
+                : Subscription.FREE;
+        for (Subscription sub : Subscription.values()) {
             List<String> subscriptionDetails = Arrays.stream(messageSource.getMessage(
-                    subscription.name().toLowerCase() + "-pack",
+                    sub.name().toLowerCase() + "-pack",
                     null,
                     new Locale(currentUser.getLanguage().name().toLowerCase())).split("\\.")).toList();
+
+            boolean isActive = sub == subscription;
 
             subscriptions.put(subscription,
                     new SubscriptionDataDto(subscription.getPriceForOneMonth(),
                             subscription.getPriceForOneYear(),
-                            subscriptionDetails));
+                            subscriptionDetails,
+                            isActive
+                    ));
         }
         return subscriptions;
     }
 
-    private ProfileResponse mappedUserToProfileResponse(User user) {
-        return new ProfileResponse(
-                user.getId(),
-                user.getProfileImage(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                user.getWorkplace(),
-                user.getPosition());
+    private UserResponseForAdmin getUserResponseForAdminTranslated(User user, User admin) {
+        if (!user.getLanguage().equals(admin.getLanguage())) {
+            String userLanguage = user.getLanguage().name().toLowerCase();
+            String adminLanguage = admin.getLanguage().name().toLowerCase();
+            if (!user.isActive())
+                user.setDeactivateReason(translateService.translate(
+                        user.getDeactivateReason(),
+                        userLanguage,
+                        adminLanguage));
+            user.setPosition(translateService.translate(user.getPosition(),
+                    userLanguage,
+                    adminLanguage));
+        }
+        return userToUserResponseForAdmin(user);
     }
 }

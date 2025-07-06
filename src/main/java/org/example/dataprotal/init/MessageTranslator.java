@@ -24,6 +24,7 @@ public class MessageTranslator {
     private final TranslateService translateService;
 
     private static final List<String> TARGET_LANGUAGES = Arrays.stream(Language.values())
+            .filter(language -> !Language.EN.equals(language))
             .map(language -> language.name().toLowerCase()).toList();
 
     private static final String BASE_PATH = "src/main/resources/i18n/";
@@ -49,7 +50,7 @@ public class MessageTranslator {
                 String translatedValue = translateService.translate("en", lang, originalValue);
                 log.info("Translating '{}' to {}: '{}'", originalValue, lang, translatedValue);
                 translated.setProperty(key, translatedValue);
-                Thread.sleep(500);
+                Thread.sleep(50);
             }
 
             writeProperties(translated, BASE_PATH + "messages_" + lang + ".properties");

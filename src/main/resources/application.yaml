@@ -69,3 +69,6 @@ cloudinary:
 
 lingva-translate:
   base-url: http://localhost:3000/api/v1
+
+
+email-address-of-the-admin-supervising-the-activity: admin1234@gmail.com
