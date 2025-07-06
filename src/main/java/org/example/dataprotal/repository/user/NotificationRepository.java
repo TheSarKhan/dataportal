@@ -11,6 +11,8 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> getByReceiverId(Long receiverId);
 
+    List<Notification> getBySenderId(Long senderId);
+
     @Query("from Notification where receiverId = :receiverId and isSeen = false")
     List<Notification> getByReceiverIdAndNotSeen(Long receiverId);
 

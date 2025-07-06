@@ -11,6 +11,7 @@ import java.util.Map;
 public class NotificationMapper {
     public static NotificationResponseForOverView notificationToNotificationResponseForOverView(Notification notification) {
         return new NotificationResponseForOverView(
+                notification.getId(),
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getReceivedTime());
@@ -22,6 +23,7 @@ public class NotificationMapper {
             languages.put(language, language.getFullName());
         }
         return new NotificationResponse(
+                notification.getId(),
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getSenderId(),
