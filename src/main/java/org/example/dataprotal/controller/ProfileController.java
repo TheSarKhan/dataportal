@@ -7,7 +7,7 @@ import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
 import org.example.dataprotal.dto.response.*;
 import org.example.dataprotal.exception.ResourceCanNotFoundException;
-import org.example.dataprotal.model.paymenthistory.PaymentHistory;
+import org.example.dataprotal.model.user.PaymentHistory;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.http.MediaType;

@@ -4,7 +4,7 @@ import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
 import org.example.dataprotal.enums.Subscription;
 import org.example.dataprotal.exception.ResourceCanNotFoundException;
-import org.example.dataprotal.model.paymenthistory.PaymentHistory;
+import org.example.dataprotal.model.user.PaymentHistory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

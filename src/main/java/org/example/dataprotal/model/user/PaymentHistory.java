@@ -1,4 +1,4 @@
-package org.example.dataprotal.model.paymenthistory;
+package org.example.dataprotal.model.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
