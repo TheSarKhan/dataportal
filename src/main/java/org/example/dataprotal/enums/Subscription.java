@@ -15,4 +15,5 @@ public enum Subscription {
     BigDecimal priceForOneMonth;
 
     BigDecimal priceForOneYear;
+
 }

@@ -11,10 +11,16 @@ import org.example.dataprotal.dto.response.ProfileResponse;
 import org.example.dataprotal.dto.response.ProfileSecurityResponse;
 import org.example.dataprotal.dto.response.ProfileSettingsResponse;
 import org.example.dataprotal.dto.response.UserResponseForAdmin;
+import org.example.dataprotal.dto.response.*;
+import org.example.dataprotal.exception.ResourceCanNotFoundException;
+import org.example.dataprotal.model.user.PaymentHistory;
+import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +35,7 @@ import java.util.List;
         description = "APIs for managing user profile, settings, roles and activation status")
 public class ProfileController {
     private final UserService userService;
+    private final PaymentHistoryService paymentHistoryService;
 
     @GetMapping
     @Operation(summary = "Get current user profile",
@@ -120,5 +127,13 @@ public class ProfileController {
     public ResponseEntity<ProfileResponse> updateProfile(@RequestPart ProfileUpdateRequest profileUpdateRequest,
                                                          @RequestPart MultipartFile profileImage) throws AuthException, IOException {
         return ResponseEntity.ok(userService.updateProfile(profileUpdateRequest, profileImage));
+    }
+
+    @GetMapping("/getMyPayments")
+    public ResponseEntity<List<PaymentHistory>> getMyPayments() throws ResourceCanNotFoundException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        List<PaymentHistory> paymentHistoryByUserEmail = paymentHistoryService.getPaymentHistoryByUserEmail(email);
+        return ResponseEntity.ok(paymentHistoryByUserEmail);
     }
 }

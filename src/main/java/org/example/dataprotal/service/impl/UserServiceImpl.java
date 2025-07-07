@@ -236,16 +236,23 @@ public class UserServiceImpl implements UserService {
 
     private Map<Subscription, SubscriptionDataDto> getSubscriptions(User currentUser) {
         Map<Subscription, SubscriptionDataDto> subscriptions = new HashMap<>();
-        for (Subscription subscription : Subscription.values()) {
+
+        Subscription subscription = currentUser.getSubscription() != null ? currentUser.getSubscription()
+                : Subscription.FREE;
+        for (Subscription sub : Subscription.values()) {
             List<String> subscriptionDetails = Arrays.stream(messageSource.getMessage(
-                    subscription.name().toLowerCase() + "-pack",
+                    sub.name().toLowerCase() + "-pack",
                     null,
                     new Locale(currentUser.getLanguage().name().toLowerCase())).split("\\.")).toList();
+
+            boolean isActive = sub == subscription;
 
             subscriptions.put(subscription,
                     new SubscriptionDataDto(subscription.getPriceForOneMonth(),
                             subscription.getPriceForOneYear(),
-                            subscriptionDetails));
+                            subscriptionDetails,
+                            isActive
+                    ));
         }
         return subscriptions;
     }
