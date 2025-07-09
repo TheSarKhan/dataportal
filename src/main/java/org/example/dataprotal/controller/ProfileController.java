@@ -11,16 +11,13 @@ import org.example.dataprotal.dto.response.ProfileResponse;
 import org.example.dataprotal.dto.response.ProfileSecurityResponse;
 import org.example.dataprotal.dto.response.ProfileSettingsResponse;
 import org.example.dataprotal.dto.response.UserResponseForAdmin;
-import org.example.dataprotal.dto.response.*;
-import org.example.dataprotal.exception.ResourceCanNotFoundException;
-import org.example.dataprotal.model.user.PaymentHistory;
+import org.example.dataprotal.exception.InvoiceCanNotBeCreatedException;
+import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -121,19 +118,21 @@ public class ProfileController {
         return ResponseEntity.ok(userService.changeUserRole(id, role));
     }
 
+    @PostMapping("/change-subscription/{subscription}")
+    @Operation(
+            summary = "Change user subscription",
+            description = "Changes the user's subscription plan and initiates payment via Payriff."
+    )
+    public ResponseEntity<String> changeSubscription(@PathVariable String subscription,
+                                                     @RequestBody PayriffInvoiceRequest request) throws AuthException, InvoiceCanNotBeCreatedException {
+        return ResponseEntity.ok(userService.changeSubscription(subscription, request));
+    }
+
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update profile",
             description = "Updates profile information along with profile image")
     public ResponseEntity<ProfileResponse> updateProfile(@RequestPart ProfileUpdateRequest profileUpdateRequest,
                                                          @RequestPart MultipartFile profileImage) throws AuthException, IOException {
         return ResponseEntity.ok(userService.updateProfile(profileUpdateRequest, profileImage));
-    }
-
-    @GetMapping("/getMyPayments")
-    public ResponseEntity<List<PaymentHistory>> getMyPayments() throws ResourceCanNotFoundException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        List<PaymentHistory> paymentHistoryByUserEmail = paymentHistoryService.getPaymentHistoryByUserEmail(email);
-        return ResponseEntity.ok(paymentHistoryByUserEmail);
     }
 }

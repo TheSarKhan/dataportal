@@ -4,7 +4,9 @@ import jakarta.security.auth.message.AuthException;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.response.*;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
+import org.example.dataprotal.exception.InvoiceCanNotBeCreatedException;
 import org.example.dataprotal.model.user.User;
+import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -41,6 +43,8 @@ public interface UserService {
     UserResponseForAdmin activateUserWithId(Long id) throws AuthException;
 
     UserResponseForAdmin changeUserRole(Long id, String role) throws AuthException;
+
+    String changeSubscription(String subscription, PayriffInvoiceRequest request) throws AuthException, InvoiceCanNotBeCreatedException;
 
     ProfileSecurityResponse updateSecurity(ProfileSecurityRequest request) throws AuthException;
 }

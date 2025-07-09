@@ -1,6 +1,7 @@
 package org.example.dataprotal.service.impl;
 
 import jakarta.security.auth.message.AuthException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.StringUtil;
@@ -11,12 +12,15 @@ import org.example.dataprotal.dto.response.ProfileResponse;
 import org.example.dataprotal.dto.response.ProfileSecurityResponse;
 import org.example.dataprotal.dto.response.ProfileSettingsResponse;
 import org.example.dataprotal.dto.response.UserResponseForAdmin;
-import org.example.dataprotal.enums.Language;
-import org.example.dataprotal.enums.Role;
-import org.example.dataprotal.enums.Subscription;
+import org.example.dataprotal.enums.*;
+import org.example.dataprotal.exception.InvoiceCanNotBeCreatedException;
+import org.example.dataprotal.model.user.PaymentHistory;
 import org.example.dataprotal.model.user.User;
+import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
+import org.example.dataprotal.payment.service.PayriffService;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.example.dataprotal.service.CloudinaryService;
+import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.TranslateService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.context.MessageSource;
@@ -26,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -45,6 +50,10 @@ public class UserServiceImpl implements UserService {
     private final TranslateService translateService;
 
     private final MessageSource messageSource;
+
+    private final PayriffService payriffService;
+
+    private final PaymentHistoryService paymentHistoryService;
 
     @Override
     public User getByEmail(String email) {
@@ -197,6 +206,34 @@ public class UserServiceImpl implements UserService {
         User user = getById(id);
         user.setRole(Role.valueOf(role.toUpperCase()));
         return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+    }
+
+    @Override
+    @Transactional
+    public String changeSubscription(String subscription, PayriffInvoiceRequest request) throws AuthException, InvoiceCanNotBeCreatedException {
+        log.info("Change subscription : {} to {}", getCurrentUser().getSubscription(), subscription);
+        User currentUser = getCurrentUser();
+        Subscription sub = Subscription.valueOf(subscription.toUpperCase());
+
+        String invoiceResponse = payriffService.createInvoiceWithUser(request, currentUser);
+
+        PaymentHistory paymentHistory = PaymentHistory.builder()
+                .userId(currentUser.getId())
+                .date(LocalDateTime.now())
+                .amount(BigDecimal.valueOf(Long.parseLong(request.getAmount())))
+                .billUrl(invoiceResponse).paymentStatus(PaymentStatus.SUCCESS)
+                .paymentType(PaymentType.CARD)
+                .subscription(sub)
+                .build();
+
+        paymentHistoryService.save(paymentHistory);
+
+        currentUser.setSubscription(sub);
+        boolean subscriptionMonthly = request.getAmount().equals(sub.getPriceForOneMonth().toString());
+        currentUser.setSubscriptionMonthly(subscriptionMonthly);
+        currentUser.setNextPaymentTime(subscriptionMonthly ? LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
+        userRepository.save(currentUser);
+        return invoiceResponse;
     }
 
     @Override

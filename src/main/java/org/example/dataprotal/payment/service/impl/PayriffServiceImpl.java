@@ -38,6 +38,19 @@ public class PayriffServiceImpl implements PayriffService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer" + token);
 
+        return makePayment(payriffInvoiceRequest, user, headers);
+    }
+
+    @Override
+    public String createInvoiceWithUser(PayriffInvoiceRequest payriffInvoiceRequest, User user) throws InvoiceCanNotBeCreatedException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + jwtService.generateAccessToken(user.getEmail(), null));
+
+        return makePayment(payriffInvoiceRequest, user, headers);
+    }
+
+    private String makePayment(PayriffInvoiceRequest payriffInvoiceRequest, User user, HttpHeaders headers) throws InvoiceCanNotBeCreatedException {
         HttpEntity<Map<String, Object>> httpEntity = getMapHttpEntity(payriffInvoiceRequest, user, headers);
 
         ResponseEntity<PayriffInvoiceResponse> responseResponseEntity = restTemplate.postForEntity(
@@ -47,7 +60,6 @@ public class PayriffServiceImpl implements PayriffService {
             if (body.getPayriffData() != null) {
                 return body.getPayriffData().getInvoiceUrl();
             }
-
         }
         throw new InvoiceCanNotBeCreatedException("Invoice can not be created");
     }
