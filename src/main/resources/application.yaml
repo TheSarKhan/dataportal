@@ -69,3 +69,7 @@ cloudinary:
 
 lingva-translate:
   base-url: http://localhost:3000/api/v1
+
+fag:
+  headers: 5
+  subheaders: 3.4.4.1.4
