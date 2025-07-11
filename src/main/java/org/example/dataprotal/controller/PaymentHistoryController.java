@@ -1,5 +1,6 @@
 package org.example.dataprotal.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.response.PaymentHistoryResponse;
@@ -22,7 +23,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("payment_history")
+@SecurityRequirement(name = "bearerAuth")
+@RequestMapping("/api/v1/payment-history")
 public class PaymentHistoryController {
     private final PaymentHistoryService paymentHistoryService;
 
@@ -35,12 +37,12 @@ public class PaymentHistoryController {
     }
 
 
-    @GetMapping("/payment-history")
+    @GetMapping
     public ResponseEntity<PaymentHistoryResponse> getPaymentHistory() throws AuthException {
         return ResponseEntity.ok(paymentHistoryService.getPaymentHistoryByUser(userService.getCurrentUser()));
     }
 
-    @GetMapping
+    @GetMapping("/filter")
     public List<PaymentHistory> filterPayments(@RequestParam(required = false) PaymentStatus status,
                                                @RequestParam(required = false) PaymentType paymentType,
                                                @RequestParam(required = false) Subscription subscription,

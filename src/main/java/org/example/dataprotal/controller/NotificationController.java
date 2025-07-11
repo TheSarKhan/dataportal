@@ -84,11 +84,10 @@ public class NotificationController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update notification",
-            description = "Updates an existing notification (Admin only)")
+            description = "Updates an existing notification")
     public ResponseEntity<NotificationResponse> updateNotification(@RequestBody Long notificationId,
-                                                                   @RequestBody NotificationRequest request) throws AuthException {
+                                                                   @RequestBody NotificationRequest request) {
         return ResponseEntity.ok(notificationService.updateNotification(notificationId, request));
     }
 
