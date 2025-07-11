@@ -3,9 +3,11 @@ package org.example.dataprotal.service.impl;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dataprotal.dto.request.ContactFormRequest;
 import org.example.dataprotal.dto.response.ContactFormResponse;
 import org.example.dataprotal.dto.response.FaqResponse;
 import org.example.dataprotal.dto.response.UserInstructionResponse;
+import org.example.dataprotal.enums.ApplicationType;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.service.SupportService;
 import org.example.dataprotal.service.TranslateService;
@@ -31,6 +33,9 @@ public class SupportServiceImpl implements SupportService {
 
     @Value("${fag.subheaders}")
     String subheaderCount;
+
+    @Value("${email-address-of-the-admin-supervising-the-contact-form}")
+    String adminEmailAddress;
 
     @Override
     public List<String> getCategories() {
@@ -94,5 +99,24 @@ public class SupportServiceImpl implements SupportService {
         } catch (AuthException ignored) {
         }
         return locale;
+    }
+
+    @Override
+    public ContactFormResponse getContactForm() {
+        Locale locale = getLocale();
+        String contactFormHeader = messageSource.getMessage("support.categories.cf", null, locale);
+        List<String> applicationNames = Arrays.stream(ApplicationType.values())
+                .map(value -> translateService.translate(
+                        "en",
+                        locale.getLanguage(),
+                        value.name().toLowerCase()))
+                .toList();
+        return new ContactFormResponse(contactFormHeader, applicationNames);
+    }
+
+    @Override
+    public String sendContactForm(ContactFormRequest request) {
+
+        return "";
     }
 }

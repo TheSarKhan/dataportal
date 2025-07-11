@@ -1,4 +1,6 @@
 package org.example.dataprotal.dto.response;
 
-public record ContactFormResponse(String header, String message) {
+import java.util.List;
+
+public record ContactFormResponse(String header, List<String> applicationTypes) {
 }
