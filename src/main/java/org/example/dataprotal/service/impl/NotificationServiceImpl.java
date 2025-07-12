@@ -15,7 +15,7 @@ import org.example.dataprotal.service.NotificationService;
 import org.example.dataprotal.service.TranslateService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,9 +35,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final UserService userService;
 
-    private final MessageSource messageSource;
+    private final ReloadableResourceBundleMessageSource messageSource;
 
-    @Value("${email-address-of-the-admin-supervising-the-activity}")
+    @Value("${email-address-of-the-admin-supervising-the.activity}")
     private String adminEmail;
 
     @Override
@@ -74,6 +74,18 @@ public class NotificationServiceImpl implements NotificationService {
                                 .senderId(request.senderId())
                                 .receiverId(request.receiverId())
                                 .build()), sender.getEmail());
+    }
+
+    @Override
+    public void sendContactForm(String title, String message, Language language, Long id) {
+        notificationRepository.save(Notification
+                .builder()
+                .title(title)
+                .message(message)
+                .language(language)
+                .receivedTime(LocalDateTime.now())
+                .receiverId(id)
+                .build());
     }
 
     @Override
@@ -217,7 +229,7 @@ public class NotificationServiceImpl implements NotificationService {
         return notifications
                 .stream()
                 .map(notification -> notificationToNotificationResponse(notification,
-                        userService.getById(notification.getSenderId()).getEmail()))
+                        notification.getSenderId()==null?"unknown user":userService.getById(notification.getSenderId()).getEmail()))
                 .toList();
     }
 }

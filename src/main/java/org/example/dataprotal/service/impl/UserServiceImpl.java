@@ -24,6 +24,7 @@ import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.TranslateService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.context.MessageSource;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     private final TranslateService translateService;
 
-    private final MessageSource messageSource;
+    private final ReloadableResourceBundleMessageSource messageSource;
 
     private final PayriffService payriffService;
 

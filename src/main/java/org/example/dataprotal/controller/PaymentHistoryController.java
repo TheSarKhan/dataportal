@@ -1,6 +1,8 @@
 package org.example.dataprotal.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.response.PaymentHistoryResponse;
@@ -25,6 +27,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/api/v1/payment-history")
+@Tag(name = "Payment History",
+        description = "Operations related to viewing and filtering user payment history")
 public class PaymentHistoryController {
     private final PaymentHistoryService paymentHistoryService;
 
@@ -32,17 +36,25 @@ public class PaymentHistoryController {
 
     @GetMapping("/getAll")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all payment histories",
+            description = "Returns all payment history records. Accessible only by ADMIN.")
     public List<PaymentHistory> getAll() {
         return paymentHistoryService.getAll();
     }
 
 
     @GetMapping
+    @Operation(summary = "Get current user's payment history",
+            description = "Returns the payment history of the currently authenticated user.")
     public ResponseEntity<PaymentHistoryResponse> getPaymentHistory() throws AuthException {
         return ResponseEntity.ok(paymentHistoryService.getPaymentHistoryByUser(userService.getCurrentUser()));
     }
 
     @GetMapping("/filter")
+    @Operation(
+            summary = "Filter payment history",
+            description = "Filters payment history of the current user by multiple optional parameters including status, type, subscription, date range, and amount range."
+    )
     public List<PaymentHistory> filterPayments(@RequestParam(required = false) PaymentStatus status,
                                                @RequestParam(required = false) PaymentType paymentType,
                                                @RequestParam(required = false) Subscription subscription,

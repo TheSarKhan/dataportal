@@ -6,5 +6,6 @@ public record ContactFormRequest(String name,
                                  String phoneNumber,
                                  String email,
                                  String applicationType,
-                                 String message) {
+                                 String message,
+                                 String language) {
 }

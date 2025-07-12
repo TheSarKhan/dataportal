@@ -1,11 +1,14 @@
 package org.example.dataprotal.service.impl;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dataprotal.enums.Language;
 import org.example.dataprotal.service.TranslateService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,8 +24,11 @@ import java.util.Scanner;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class LingvaTranslateService implements TranslateService {
     private final RestTemplate restTemplate;
+
+    private final ReloadableResourceBundleMessageSource messageSource;
 
     private static final List<String> TARGET_LANGUAGES = Arrays.stream(Language.values())
             .map(language -> language.name().toLowerCase())
@@ -34,10 +40,6 @@ public class LingvaTranslateService implements TranslateService {
 
     @Value("${lingva-translate.base-url}")
     String baseUrl;
-
-    public LingvaTranslateService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
 
     public String translate(String from, String to, String text) {
         String url = UriComponentsBuilder
@@ -75,6 +77,7 @@ public class LingvaTranslateService implements TranslateService {
             log.info("messages_{}.properties generated successfully.", lang);
         }
         log.info("Translation process finished successfully.");
+        messageSource.clearCache();
         return "Translation process finished successfully.";
     }
 

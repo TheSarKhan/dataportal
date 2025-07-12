@@ -8,13 +8,13 @@ import org.example.dataprotal.dto.response.UserInstructionResponse;
 import java.util.List;
 
 public interface SupportService {
-    List<String> getCategories();
+    List<String> getCategories(String language);
 
-    FaqResponse getFagInfo();
+    FaqResponse getFagInfo(String language);
 
-    UserInstructionResponse getUserInstruction();
+    UserInstructionResponse getUserInstruction(String language);
 
-    ContactFormResponse getContactForm();
+    ContactFormResponse getContactForm(String language);
 
     String sendContactForm(ContactFormRequest request);
 }
