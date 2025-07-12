@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
+import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
 import org.example.dataprotal.dto.response.ProfileResponse;
@@ -118,14 +119,14 @@ public class ProfileController {
         return ResponseEntity.ok(userService.changeUserRole(id, role));
     }
 
-    @PostMapping("/change-subscription/{subscription}")
+    @PostMapping("/change-subscription")
     @Operation(
             summary = "Change user subscription",
             description = "Changes the user's subscription plan and initiates payment via Payriff."
     )
-    public ResponseEntity<String> changeSubscription(@PathVariable String subscription,
-                                                     @RequestBody PayriffInvoiceRequest request) throws AuthException, InvoiceCanNotBeCreatedException {
-        return ResponseEntity.ok(userService.changeSubscription(subscription, request));
+    public ResponseEntity<String> changeSubscription(@RequestBody ChangeSubscriptionRequest request,
+                                                     @RequestBody PayriffInvoiceRequest paymentRequest) throws AuthException, InvoiceCanNotBeCreatedException {
+        return ResponseEntity.ok(userService.changeSubscription(request, paymentRequest));
     }
 
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -1,11 +1,14 @@
 package org.example.dataprotal.service.impl;
 
+import com.cloudinary.utils.StringUtils;
 import jakarta.security.auth.message.AuthException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.StringUtil;
+import org.example.dataprotal.config.RecaptchaConfig;
 import org.example.dataprotal.dto.SubscriptionDataDto;
+import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
 import org.example.dataprotal.dto.response.ProfileResponse;
@@ -23,7 +26,6 @@ import org.example.dataprotal.service.CloudinaryService;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.TranslateService;
 import org.example.dataprotal.service.UserService;
-import org.springframework.context.MessageSource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,6 +57,8 @@ public class UserServiceImpl implements UserService {
     private final PayriffService payriffService;
 
     private final PaymentHistoryService paymentHistoryService;
+
+    private final RecaptchaConfig recaptchaConfig;
 
     @Override
     public User getByEmail(String email) {
@@ -211,17 +215,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String changeSubscription(String subscription, PayriffInvoiceRequest request) throws AuthException, InvoiceCanNotBeCreatedException {
-        log.info("Change subscription : {} to {}", getCurrentUser().getSubscription(), subscription);
+    public String changeSubscription(ChangeSubscriptionRequest request, PayriffInvoiceRequest paymentRequest) throws AuthException, InvoiceCanNotBeCreatedException {
+        String subscription = request.subscription();
+        String recaptchaToken = request.recaptchaToken();
         User currentUser = getCurrentUser();
+        log.info("Change subscription : {} to {}", currentUser.getSubscription(), subscription);
+
+        if (StringUtils.isEmpty(recaptchaToken) || !recaptchaConfig.verifyCaptcha(recaptchaToken)) {
+            throw new AuthException("ReCaptcha validation failed");
+        }
+
         Subscription sub = Subscription.valueOf(subscription.toUpperCase());
 
-        String invoiceResponse = payriffService.createInvoiceWithUser(request, currentUser);
+        String invoiceResponse = payriffService.createInvoiceWithUser(paymentRequest, currentUser);
 
         PaymentHistory paymentHistory = PaymentHistory.builder()
                 .userId(currentUser.getId())
                 .date(LocalDateTime.now())
-                .amount(BigDecimal.valueOf(Long.parseLong(request.getAmount())))
+                .amount(BigDecimal.valueOf(Long.parseLong(paymentRequest.getAmount())))
                 .billUrl(invoiceResponse).paymentStatus(PaymentStatus.SUCCESS)
                 .paymentType(PaymentType.CARD)
                 .subscription(sub)
@@ -230,12 +241,13 @@ public class UserServiceImpl implements UserService {
         paymentHistoryService.save(paymentHistory);
 
         currentUser.setSubscription(sub);
-        boolean subscriptionMonthly = request.getAmount().equals(sub.getPriceForOneMonth().toString());
+        boolean subscriptionMonthly = paymentRequest.getAmount().equals(sub.getPriceForOneMonth().toString());
         currentUser.setSubscriptionMonthly(subscriptionMonthly);
         currentUser.setNextPaymentTime(subscriptionMonthly ? LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
         userRepository.save(currentUser);
         return invoiceResponse;
     }
+
 
     @Override
     public ProfileSecurityResponse updateSecurity(ProfileSecurityRequest request) throws AuthException {

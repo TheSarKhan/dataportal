@@ -1,6 +1,7 @@
 package org.example.dataprotal.service;
 
 import jakarta.security.auth.message.AuthException;
+import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.response.*;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
@@ -44,7 +45,7 @@ public interface UserService {
 
     UserResponseForAdmin changeUserRole(Long id, String role) throws AuthException;
 
-    String changeSubscription(String subscription, PayriffInvoiceRequest request) throws AuthException, InvoiceCanNotBeCreatedException;
+    String changeSubscription(ChangeSubscriptionRequest request, PayriffInvoiceRequest paymentRequest) throws AuthException, InvoiceCanNotBeCreatedException;
 
     ProfileSecurityResponse updateSecurity(ProfileSecurityRequest request) throws AuthException;
 }
