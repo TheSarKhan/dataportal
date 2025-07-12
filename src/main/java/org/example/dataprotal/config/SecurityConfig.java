@@ -96,7 +96,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/google-login", "/login", "/api/v1/content/**","/api/v1/dataset/**", "/api/v1/card/**","/api/v1/page/**",
                                 "/api/v1/auth/email/consultation", "/api/v1/auth/email/appeal",
                                 "/api/v1/auth/**", "/api/v1/auth/refresh","/test","/api/v1/chatbot/**",
-                                "api/v1/support","api/v1/support/**"
+                                "api/v1/support","api/v1/support/**","/api/v1/notification/activate/**"
                         ).permitAll()
 //                        .requestMatchers("/api/v1/dataset/**").hasAnyRole("PREMIUM","ADMIN")
                         .anyRequest().authenticated()
