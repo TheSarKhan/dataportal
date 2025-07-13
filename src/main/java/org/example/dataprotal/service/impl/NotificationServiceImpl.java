@@ -58,7 +58,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .receiverId(admin.getId())
                 .build();
         notificationRepository.save(notification);
-        return "Request send successfully.";
+        return messageSource.getMessage("notification.message.success", null,
+                new Locale(user.getLanguage().name().toLowerCase()));
     }
 
     @Override
@@ -202,19 +203,19 @@ public class NotificationServiceImpl implements NotificationService {
                 " ( email : " + user.getEmail() +
                 " , " +
                 translateService.translate(
-                        "deactivate reason",
                         "en",
-                        admin.getLanguage().name().toLowerCase()) +
+                        admin.getLanguage().name().toLowerCase(),
+                        "deactivate reason") +
                 " : " +
                 translateService.translate(
-                        user.getDeactivateReason(),
                         user.getLanguage().name().toLowerCase(),
-                        admin.getLanguage().name().toLowerCase()) +
+                        admin.getLanguage().name().toLowerCase(),
+                        user.getDeactivateReason()) +
                 " , " +
                 translateService.translate(
-                        "deactivate time",
                         "en",
-                        admin.getLanguage().name().toLowerCase()) +
+                        admin.getLanguage().name().toLowerCase(),
+                        "deactivate time") +
                 " : " + user.getDeactivateTime() + " ) ";
     }
 
@@ -229,7 +230,7 @@ public class NotificationServiceImpl implements NotificationService {
         return notifications
                 .stream()
                 .map(notification -> notificationToNotificationResponse(notification,
-                        notification.getSenderId()==null?"unknown user":userService.getById(notification.getSenderId()).getEmail()))
+                        notification.getSenderId() == null ? "unknown user" : userService.getById(notification.getSenderId()).getEmail()))
                 .toList();
     }
 }

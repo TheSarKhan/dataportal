@@ -48,7 +48,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         return paymentHistoryRepository.findAll(
                 (root, query, cb) -> {
                     List<Predicate> predicates = new ArrayList<>();
-                    predicates.add(cb.equal(root.get("user").get("id"), user.getId()));
+                    predicates.add(cb.equal(root.get("userId"), user.getId()));
                     if (status != null) predicates.add(cb.equal(root.get("status"), status));
                     if (paymentType != null) predicates.add(cb.equal(root.get("paymentType"), paymentType));
                     if (subscription != null) predicates.add(cb.equal(root.get("subscription"), subscription));

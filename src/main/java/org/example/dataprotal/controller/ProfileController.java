@@ -14,7 +14,6 @@ import org.example.dataprotal.dto.response.ProfileSettingsResponse;
 import org.example.dataprotal.dto.response.UserResponseForAdmin;
 import org.example.dataprotal.exception.InvoiceCanNotBeCreatedException;
 import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
-import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +32,6 @@ import java.util.List;
         description = "APIs for managing user profile, settings, roles and activation status")
 public class ProfileController {
     private final UserService userService;
-    private final PaymentHistoryService paymentHistoryService;
 
     @GetMapping
     @Operation(summary = "Get current user profile",
@@ -56,6 +54,14 @@ public class ProfileController {
             description = "Returns profile information for a specific user by ID (Admin only)")
     public ResponseEntity<UserResponseForAdmin> getProfileById(@PathVariable Long id) throws AuthException {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping("/email/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get profile by email",
+            description = "Returns profile information for a specific user by email (Admin only)")
+    public ResponseEntity<UserResponseForAdmin> getProfileByEmail(@PathVariable String email) throws AuthException {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
     @GetMapping("/settings")
@@ -87,7 +93,7 @@ public class ProfileController {
     }
 
     @PatchMapping("/deactivate-profile/{deactivateReason}")
-    @Operation(summary = "Deactivate profile",
+    @Operation(summary = "Deactivate current profile",
             description = "Deactivates the current user's profile with a reason")
     public ResponseEntity<String> deactivateProfile(@PathVariable String deactivateReason) throws AuthException {
         return ResponseEntity.ok(userService.deactivateProfile(deactivateReason));
@@ -103,11 +109,28 @@ public class ProfileController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/deactivate-profile/email/{email}/reason/{reason}")
+    @Operation(summary = "Deactivate profile by email",
+            description = "Deactivates a user profile by email with given reason (Admin only)")
+    public ResponseEntity<UserResponseForAdmin> deactivateProfileByEmail(@PathVariable String email,
+                                                                         @PathVariable String reason) throws AuthException {
+        return ResponseEntity.ok(userService.deactivateUserWithEmail(email, reason));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/activate-profile/id/{id}")
     @Operation(summary = "Activate profile by ID",
             description = "Activates a user profile by ID (Admin only)")
     public ResponseEntity<UserResponseForAdmin> activateProfileById(@PathVariable Long id) throws AuthException {
         return ResponseEntity.ok(userService.activateUserWithId(id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/activate-profile/email/{email}")
+    @Operation(summary = "Activate profile by email",
+            description = "Activates a user profile by email (Admin only)")
+    public ResponseEntity<UserResponseForAdmin> activateProfileByEmail(@PathVariable String email) throws AuthException {
+        return ResponseEntity.ok(userService.activateUserWithEmail(email));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

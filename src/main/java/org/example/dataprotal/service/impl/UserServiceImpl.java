@@ -99,6 +99,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseForAdmin getUserByEmail(String email) throws AuthException {
+        log.info("Get user by email : {}", email);
+        return getUserResponseForAdminTranslated(getByEmail(email), getCurrentUser());
+    }
+
+    @Override
     public User getById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> {
             log.error("User not found with id : {}", id);
@@ -118,7 +124,7 @@ public class UserServiceImpl implements UserService {
 
         String deactivateReason = messageSource.getMessage("deactivate-reasons", null,
                 new Locale(currentUser.getLanguage().name().toLowerCase()));
-        List<String> deactivateReasons = Arrays.stream(deactivateReason.split("\\.")).toList();
+        List<String> deactivateReasons = Arrays.stream(deactivateReason.split("\\.")).map(String::trim).toList();
 
         return new ProfileSettingsResponse(
                 currentUser.getLanguage(),
@@ -163,9 +169,11 @@ public class UserServiceImpl implements UserService {
     public ProfileResponse updateLanguage(String language) throws AuthException {
         log.info("Update language : {}", language);
         User user = getCurrentUser();
-        user.setPosition(translateService.translate(user.getPosition(),
-                user.getLanguage().name().toLowerCase(),
-                language.toLowerCase()));
+        if (user.getPosition() != null)
+            user.setPosition(translateService.translate(
+                    user.getLanguage().name().toLowerCase(),
+                    language.toLowerCase(),
+                    user.getPosition()));
         user.setLanguage(Language.valueOf(language.toUpperCase()));
         return userToProfileResponse(userRepository.save(user));
     }
@@ -186,23 +194,28 @@ public class UserServiceImpl implements UserService {
     public UserResponseForAdmin deactivateUserWithId(Long id, String reason) throws AuthException {
         log.info("Deactivate user with id : {}", id);
         User user = getById(id);
-        user.setActive(false);
-        User admin = getCurrentUser();
-        user.setDeactivateReason(translateService.translate(reason,
-                admin.getLanguage().name().toLowerCase(),
-                user.getLanguage().name().toLowerCase()));
-        user.setDeactivateTime(LocalDateTime.now());
-        return getUserResponseForAdminTranslated(userRepository.save(user), admin);
+        return deactivateUser(reason, user);
+    }
+
+    @Override
+    public UserResponseForAdmin deactivateUserWithEmail(String email, String reason) throws AuthException {
+        log.info("Deactivate user with email : {}", email);
+        User user = getByEmail(email);
+        return deactivateUser(reason, user);
     }
 
     @Override
     public UserResponseForAdmin activateUserWithId(Long id) throws AuthException {
         log.info("Activate user with id : {}", id);
         User user = getById(id);
-        user.setActive(true);
-        user.setDeactivateReason(null);
-        user.setDeactivateTime(null);
-        return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+        return activateUser(user);
+    }
+
+    @Override
+    public UserResponseForAdmin activateUserWithEmail(String email) throws AuthException {
+        log.info("Activate user with email : {}", email);
+        User user = getByEmail(email);
+        return activateUser(user);
     }
 
     @Override
@@ -241,9 +254,14 @@ public class UserServiceImpl implements UserService {
         paymentHistoryService.save(paymentHistory);
 
         currentUser.setSubscription(sub);
-        boolean subscriptionMonthly = paymentRequest.getAmount().equals(sub.getPriceForOneMonth().toString());
-        currentUser.setSubscriptionMonthly(subscriptionMonthly);
-        currentUser.setNextPaymentTime(subscriptionMonthly ? LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
+        if (!Subscription.FREE.equals(sub)) {
+            boolean subscriptionMonthly = paymentRequest.getAmount().equals(sub.getPriceForOneMonth().toString());
+            currentUser.setSubscriptionMonthly(subscriptionMonthly);
+            currentUser.setNextPaymentTime(subscriptionMonthly ? LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
+        } else {
+            currentUser.setSubscriptionMonthly(false);
+            currentUser.setNextPaymentTime(null);
+        }
         userRepository.save(currentUser);
         return invoiceResponse;
     }
@@ -258,8 +276,7 @@ public class UserServiceImpl implements UserService {
             currentUser.setPassword(passwordEncoder.encode(request.newPassword()));
             currentUser.setUpdatedAt(LocalDateTime.now());
         }
-        if (!StringUtil.isBlank(request.recoveryEmail()) ||
-                !request.recoveryEmail().equals(currentUser.getRecoveryEmail())) {
+        if (!StringUtil.isBlank(request.recoveryEmail())) {
             if (currentUser.getEmail().equals(request.recoveryEmail())) {
                 String errorMessage = messageSource.getMessage("recovery-email.error", null,
                         new Locale(currentUser.getLanguage().name().toLowerCase()));
@@ -268,8 +285,7 @@ public class UserServiceImpl implements UserService {
             }
             currentUser.setRecoveryEmail(request.recoveryEmail());
         }
-        if (!StringUtil.isBlank(request.recoveryPhoneNumber()) ||
-                !request.recoveryPhoneNumber().equals(currentUser.getRecoveryPhoneNumber())) {
+        if (!StringUtil.isBlank(request.recoveryPhoneNumber())) {
             if (currentUser.getPhoneNumber().equals(request.recoveryPhoneNumber())) {
                 String errorMessage = messageSource.getMessage("recovery-phone-number.error", null,
                         new Locale(currentUser.getLanguage().name().toLowerCase()));
@@ -284,24 +300,38 @@ public class UserServiceImpl implements UserService {
                 user.getRecoveryPhoneNumber());
     }
 
+    private UserResponseForAdmin activateUser(User user) throws AuthException {
+        user.setActive(true);
+        user.setDeactivateReason(null);
+        user.setDeactivateTime(null);
+        return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+    }
+
+    private UserResponseForAdmin deactivateUser(String reason, User user) throws AuthException {
+        user.setActive(false);
+        User admin = getCurrentUser();
+        user.setDeactivateReason(translateService.translate(
+                admin.getLanguage().name().toLowerCase(),
+                user.getLanguage().name().toLowerCase(),
+                reason));
+        user.setDeactivateTime(LocalDateTime.now());
+        return getUserResponseForAdminTranslated(userRepository.save(user), admin);
+    }
+
     private Map<Subscription, SubscriptionDataDto> getSubscriptions(User currentUser) {
         Map<Subscription, SubscriptionDataDto> subscriptions = new HashMap<>();
 
-        Subscription subscription = currentUser.getSubscription() != null ? currentUser.getSubscription()
-                : Subscription.FREE;
         for (Subscription sub : Subscription.values()) {
             List<String> subscriptionDetails = Arrays.stream(messageSource.getMessage(
-                    sub.name().toLowerCase() + "-pack",
-                    null,
-                    new Locale(currentUser.getLanguage().name().toLowerCase())).split("\\.")).toList();
+                            sub.name().toLowerCase() + "-pack",
+                            null,
+                            new Locale(currentUser.getLanguage().name().toLowerCase())).split("\\."))
+                    .map(String::trim).toList();
 
-            boolean isActive = sub == subscription;
-
-            subscriptions.put(subscription,
-                    new SubscriptionDataDto(subscription.getPriceForOneMonth(),
-                            subscription.getPriceForOneYear(),
-                            subscriptionDetails,
-                            isActive
+            subscriptions.put(sub,
+                    new SubscriptionDataDto(sub.getPriceForOneMonth(),
+                            sub.getPriceForOneYear(),
+                            subscriptionDetails
                     ));
         }
         return subscriptions;
@@ -313,12 +343,14 @@ public class UserServiceImpl implements UserService {
             String adminLanguage = admin.getLanguage().name().toLowerCase();
             if (!user.isActive())
                 user.setDeactivateReason(translateService.translate(
-                        user.getDeactivateReason(),
                         userLanguage,
-                        adminLanguage));
-            user.setPosition(translateService.translate(user.getPosition(),
-                    userLanguage,
-                    adminLanguage));
+                        adminLanguage,
+                        user.getDeactivateReason()));
+            if (user.getPosition() != null)
+                user.setPosition(translateService.translate(
+                        userLanguage,
+                        adminLanguage,
+                        user.getPosition()));
         }
         return userToUserResponseForAdmin(user);
     }

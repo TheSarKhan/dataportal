@@ -5,6 +5,5 @@ import java.util.List;
 
 public record SubscriptionDataDto(BigDecimal priceForOneMonth,
                                   BigDecimal priceForOneYear,
-                                  List<String> advantages,
-                                  boolean isActive) {
+                                  List<String> advantages) {
 }

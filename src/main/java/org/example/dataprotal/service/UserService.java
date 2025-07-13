@@ -24,6 +24,8 @@ public interface UserService {
 
     UserResponseForAdmin getUserById(Long id) throws AuthException;
 
+    UserResponseForAdmin getUserByEmail(String email) throws AuthException;
+
     User getById(Long id);
 
     List<UserResponseForAdmin> searchUserByName(String name) throws AuthException;
@@ -41,7 +43,11 @@ public interface UserService {
 
     UserResponseForAdmin deactivateUserWithId(Long id, String reason) throws AuthException;
 
+    UserResponseForAdmin deactivateUserWithEmail(String email, String reason) throws AuthException;
+
     UserResponseForAdmin activateUserWithId(Long id) throws AuthException;
+
+    UserResponseForAdmin activateUserWithEmail(String email) throws AuthException;
 
     UserResponseForAdmin changeUserRole(Long id, String role) throws AuthException;
 
