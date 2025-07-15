@@ -6,10 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.dataprotal.dto.response.PaymentHistoryResponse;
 import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
-import org.example.dataprotal.enums.Subscription;
 import org.example.dataprotal.model.user.PaymentHistory;
 import org.example.dataprotal.model.user.User;
-import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
 import org.example.dataprotal.repository.user.PaymentHistoryRepository;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.springframework.stereotype.Service;
@@ -43,7 +41,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
     @Override
     public List<PaymentHistory> filterPayments(User user, PaymentStatus status, PaymentType paymentType,
-                                               Subscription subscription, LocalDate fromDate, LocalDate toDate,
+                                               Long subscriptionId, LocalDate fromDate, LocalDate toDate,
                                                BigDecimal minAmount, BigDecimal maxAmount) {
         return paymentHistoryRepository.findAll(
                 (root, query, cb) -> {
@@ -51,7 +49,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
                     predicates.add(cb.equal(root.get("userId"), user.getId()));
                     if (status != null) predicates.add(cb.equal(root.get("status"), status));
                     if (paymentType != null) predicates.add(cb.equal(root.get("paymentType"), paymentType));
-                    if (subscription != null) predicates.add(cb.equal(root.get("subscription"), subscription));
+                    if (subscriptionId != null) predicates.add(cb.equal(root.get("subscriptionId"), subscriptionId));
                     if (fromDate != null) predicates.add(cb.greaterThanOrEqualTo(root.get("date"), fromDate));
                     if (toDate != null) predicates.add(cb.lessThanOrEqualTo(root.get("date"), toDate));
                     if (minAmount != null) predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), minAmount));

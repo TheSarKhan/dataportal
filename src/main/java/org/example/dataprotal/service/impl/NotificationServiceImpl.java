@@ -196,27 +196,21 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private String getMessageForActivateProfile(Locale locale, User user, User admin) {
-        return messageSource.getMessage(
+        String message = messageSource.getMessage(
                 "activate-request-massage",
                 null,
                 locale) +
                 " ( email : " + user.getEmail() +
-                " , " +
-                translateService.translate(
-                        "en",
-                        admin.getLanguage().name().toLowerCase(),
-                        "deactivate reason") +
-                " : " +
+                " , deactivate reason : " +
                 translateService.translate(
                         user.getLanguage().name().toLowerCase(),
-                        admin.getLanguage().name().toLowerCase(),
-                        user.getDeactivateReason()) +
-                " , " +
-                translateService.translate(
                         "en",
-                        admin.getLanguage().name().toLowerCase(),
-                        "deactivate time") +
-                " : " + user.getDeactivateTime() + " ) ";
+                        user.getDeactivateReason()) +
+                " , deactivate time : " + user.getDeactivateTime() + " ) ";
+        return translateService.translate(
+                "en",
+                admin.getLanguage().name().toLowerCase(),
+                message);
     }
 
     private Notification getById(Long id) {

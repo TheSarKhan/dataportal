@@ -35,7 +35,7 @@ public class UserMapper {
                 user.getGoogleId(),
                 user.getRecoveryEmail(),
                 user.getRecoveryPhoneNumber(),
-                user.getSubscription(),
+                user.getSubscriptionId(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
     }

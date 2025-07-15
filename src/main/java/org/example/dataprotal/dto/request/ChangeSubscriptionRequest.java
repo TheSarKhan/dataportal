@@ -1,4 +1,6 @@
 package org.example.dataprotal.dto.request;
 
-public record ChangeSubscriptionRequest(String subscription, String recaptchaToken) {
+public record ChangeSubscriptionRequest(Long subscriptionId,
+                                        String currency,
+                                        String recaptchaToken) {
 }

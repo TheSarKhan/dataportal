@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.StringUtil;
 import org.example.dataprotal.config.RecaptchaConfig;
-import org.example.dataprotal.dto.SubscriptionDataDto;
 import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
@@ -15,16 +14,21 @@ import org.example.dataprotal.dto.response.ProfileResponse;
 import org.example.dataprotal.dto.response.ProfileSecurityResponse;
 import org.example.dataprotal.dto.response.ProfileSettingsResponse;
 import org.example.dataprotal.dto.response.UserResponseForAdmin;
-import org.example.dataprotal.enums.*;
+import org.example.dataprotal.enums.Language;
+import org.example.dataprotal.enums.PaymentStatus;
+import org.example.dataprotal.enums.PaymentType;
+import org.example.dataprotal.enums.Role;
 import org.example.dataprotal.exception.InvoiceCanNotBeCreatedException;
+import org.example.dataprotal.mapper.UserMapper;
 import org.example.dataprotal.model.user.PaymentHistory;
+import org.example.dataprotal.model.user.Subscription;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
 import org.example.dataprotal.payment.service.PayriffService;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.example.dataprotal.service.CloudinaryService;
 import org.example.dataprotal.service.PaymentHistoryService;
-import org.example.dataprotal.service.TranslateService;
+import org.example.dataprotal.service.SubscriptionService;
 import org.example.dataprotal.service.UserService;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,13 +54,13 @@ public class UserServiceImpl implements UserService {
 
     private final CloudinaryService cloudinaryService;
 
-    private final TranslateService translateService;
-
     private final ReloadableResourceBundleMessageSource messageSource;
 
     private final PayriffService payriffService;
 
     private final PaymentHistoryService paymentHistoryService;
+
+    private final SubscriptionService subscriptionService;
 
     private final RecaptchaConfig recaptchaConfig;
 
@@ -85,23 +89,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseForAdmin> getAllUsers() throws AuthException {
+    public List<UserResponseForAdmin> getAllUsers() {
         log.info("Get all users");
-        User admin = getCurrentUser();
         return userRepository.findAll().stream()
-                .map(user -> getUserResponseForAdminTranslated(user, admin)).toList();
+                .map(UserMapper::userToUserResponseForAdmin)
+                .toList();
     }
 
     @Override
-    public UserResponseForAdmin getUserById(Long id) throws AuthException {
+    public UserResponseForAdmin getUserById(Long id) {
         log.info("Get user by id : {}", id);
-        return getUserResponseForAdminTranslated(getById(id), getCurrentUser());
+        return userToUserResponseForAdmin(getById(id));
     }
 
     @Override
-    public UserResponseForAdmin getUserByEmail(String email) throws AuthException {
+    public UserResponseForAdmin getUserByEmail(String email) {
         log.info("Get user by email : {}", email);
-        return getUserResponseForAdminTranslated(getByEmail(email), getCurrentUser());
+        return userToUserResponseForAdmin(getByEmail(email));
     }
 
     @Override
@@ -129,8 +133,8 @@ public class UserServiceImpl implements UserService {
         return new ProfileSettingsResponse(
                 currentUser.getLanguage(),
                 languages,
-                currentUser.getSubscription(),
-                getSubscriptions(currentUser),
+                currentUser.getSubscriptionId(),
+                subscriptionService.getAllSubscriptions(),
                 deactivateReasons);
     }
 
@@ -144,10 +148,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseForAdmin> searchUserByName(String name) throws AuthException {
-        User admin = getCurrentUser();
+    public List<UserResponseForAdmin> searchUserByName(String name) {
         return userRepository.searchUserByName(name).stream()
-                .map(user -> getUserResponseForAdminTranslated(user, admin)).toList();
+                .map(UserMapper::userToUserResponseForAdmin)
+                .toList();
     }
 
     @Override
@@ -169,11 +173,6 @@ public class UserServiceImpl implements UserService {
     public ProfileResponse updateLanguage(String language) throws AuthException {
         log.info("Update language : {}", language);
         User user = getCurrentUser();
-        if (user.getPosition() != null)
-            user.setPosition(translateService.translate(
-                    user.getLanguage().name().toLowerCase(),
-                    language.toLowerCase(),
-                    user.getPosition()));
         user.setLanguage(Language.valueOf(language.toUpperCase()));
         return userToProfileResponse(userRepository.save(user));
     }
@@ -191,54 +190,52 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseForAdmin deactivateUserWithId(Long id, String reason) throws AuthException {
+    public UserResponseForAdmin deactivateUserWithId(Long id, String reason) {
         log.info("Deactivate user with id : {}", id);
         User user = getById(id);
         return deactivateUser(reason, user);
     }
 
     @Override
-    public UserResponseForAdmin deactivateUserWithEmail(String email, String reason) throws AuthException {
+    public UserResponseForAdmin deactivateUserWithEmail(String email, String reason) {
         log.info("Deactivate user with email : {}", email);
         User user = getByEmail(email);
         return deactivateUser(reason, user);
     }
 
     @Override
-    public UserResponseForAdmin activateUserWithId(Long id) throws AuthException {
+    public UserResponseForAdmin activateUserWithId(Long id) {
         log.info("Activate user with id : {}", id);
         User user = getById(id);
         return activateUser(user);
     }
 
     @Override
-    public UserResponseForAdmin activateUserWithEmail(String email) throws AuthException {
+    public UserResponseForAdmin activateUserWithEmail(String email) {
         log.info("Activate user with email : {}", email);
         User user = getByEmail(email);
         return activateUser(user);
     }
 
     @Override
-    public UserResponseForAdmin changeUserRole(Long id, String role) throws AuthException {
+    public UserResponseForAdmin changeUserRole(Long id, String role) {
         log.info("Change user role with id : {} to {}", id, role);
         User user = getById(id);
         user.setRole(Role.valueOf(role.toUpperCase()));
-        return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+        return userToUserResponseForAdmin(userRepository.save(user));
     }
 
     @Override
     @Transactional
     public String changeSubscription(ChangeSubscriptionRequest request, PayriffInvoiceRequest paymentRequest) throws AuthException, InvoiceCanNotBeCreatedException {
-        String subscription = request.subscription();
+        Subscription subscription = subscriptionService.getSubscriptionById(request.subscriptionId());
         String recaptchaToken = request.recaptchaToken();
         User currentUser = getCurrentUser();
-        log.info("Change subscription : {} to {}", currentUser.getSubscription(), subscription);
+        log.info("Change subscription : {} to {}", currentUser.getSubscriptionId(), subscription);
 
         if (StringUtils.isEmpty(recaptchaToken) || !recaptchaConfig.verifyCaptcha(recaptchaToken)) {
             throw new AuthException("ReCaptcha validation failed");
         }
-
-        Subscription sub = Subscription.valueOf(subscription.toUpperCase());
 
         String invoiceResponse = payriffService.createInvoiceWithUser(paymentRequest, currentUser);
 
@@ -248,16 +245,19 @@ public class UserServiceImpl implements UserService {
                 .amount(BigDecimal.valueOf(Long.parseLong(paymentRequest.getAmount())))
                 .billUrl(invoiceResponse).paymentStatus(PaymentStatus.SUCCESS)
                 .paymentType(PaymentType.CARD)
-                .subscription(sub)
+                .subscriptionId(subscription.getId())
                 .build();
 
         paymentHistoryService.save(paymentHistory);
 
-        currentUser.setSubscription(sub);
-        if (!Subscription.FREE.equals(sub)) {
-            boolean subscriptionMonthly = paymentRequest.getAmount().equals(sub.getPriceForOneMonth().toString());
-            currentUser.setSubscriptionMonthly(subscriptionMonthly);
-            currentUser.setNextPaymentTime(subscriptionMonthly ? LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
+        currentUser.setSubscriptionId(subscription.getId());
+        if (!subscription.getName().equals("FREE")) {
+            boolean isSubscriptionMonthly = paymentRequest.getAmount().equals(
+                    subscription.getCureencyMonthlyAndYearlyPriceMap()
+                            .get(request.currency()).get(0).toString());
+
+            currentUser.setSubscriptionMonthly(isSubscriptionMonthly);
+            currentUser.setNextPaymentTime(isSubscriptionMonthly ? LocalDateTime.now().plusMonths(1) : LocalDateTime.now().plusYears(1));
         } else {
             currentUser.setSubscriptionMonthly(false);
             currentUser.setNextPaymentTime(null);
@@ -300,58 +300,17 @@ public class UserServiceImpl implements UserService {
                 user.getRecoveryPhoneNumber());
     }
 
-    private UserResponseForAdmin activateUser(User user) throws AuthException {
+    private UserResponseForAdmin activateUser(User user) {
         user.setActive(true);
         user.setDeactivateReason(null);
         user.setDeactivateTime(null);
-        return getUserResponseForAdminTranslated(userRepository.save(user), getCurrentUser());
+        return userToUserResponseForAdmin(userRepository.save(user));
     }
 
-    private UserResponseForAdmin deactivateUser(String reason, User user) throws AuthException {
+    private UserResponseForAdmin deactivateUser(String reason, User user) {
         user.setActive(false);
-        User admin = getCurrentUser();
-        user.setDeactivateReason(translateService.translate(
-                admin.getLanguage().name().toLowerCase(),
-                user.getLanguage().name().toLowerCase(),
-                reason));
+        user.setDeactivateReason(reason);
         user.setDeactivateTime(LocalDateTime.now());
-        return getUserResponseForAdminTranslated(userRepository.save(user), admin);
-    }
-
-    private Map<Subscription, SubscriptionDataDto> getSubscriptions(User currentUser) {
-        Map<Subscription, SubscriptionDataDto> subscriptions = new HashMap<>();
-
-        for (Subscription sub : Subscription.values()) {
-            List<String> subscriptionDetails = Arrays.stream(messageSource.getMessage(
-                            sub.name().toLowerCase() + "-pack",
-                            null,
-                            new Locale(currentUser.getLanguage().name().toLowerCase())).split("\\."))
-                    .map(String::trim).toList();
-
-            subscriptions.put(sub,
-                    new SubscriptionDataDto(sub.getPriceForOneMonth(),
-                            sub.getPriceForOneYear(),
-                            subscriptionDetails
-                    ));
-        }
-        return subscriptions;
-    }
-
-    private UserResponseForAdmin getUserResponseForAdminTranslated(User user, User admin) {
-        if (!user.getLanguage().equals(admin.getLanguage())) {
-            String userLanguage = user.getLanguage().name().toLowerCase();
-            String adminLanguage = admin.getLanguage().name().toLowerCase();
-            if (!user.isActive())
-                user.setDeactivateReason(translateService.translate(
-                        userLanguage,
-                        adminLanguage,
-                        user.getDeactivateReason()));
-            if (user.getPosition() != null)
-                user.setPosition(translateService.translate(
-                        userLanguage,
-                        adminLanguage,
-                        user.getPosition()));
-        }
-        return userToUserResponseForAdmin(user);
+        return userToUserResponseForAdmin(userRepository.save(user));
     }
 }

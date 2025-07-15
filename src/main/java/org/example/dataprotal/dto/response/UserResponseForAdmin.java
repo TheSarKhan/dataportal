@@ -1,7 +1,6 @@
 package org.example.dataprotal.dto.response;
 
 import org.example.dataprotal.enums.Role;
-import org.example.dataprotal.enums.Subscription;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +20,7 @@ public record UserResponseForAdmin(Long id,
                                    String googleId,
                                    String recoveryEmail,
                                    String recoveryPhoneNumber,
-                                   Subscription subscription,
+                                   Long subscriptionId,
                                    LocalDateTime createdAt,
                                    LocalDateTime updatedAt) {
 }

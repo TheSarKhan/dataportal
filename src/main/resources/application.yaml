@@ -48,9 +48,9 @@ spring:
       username: root
       password: root
     fourth:
-        url: jdbc:postgresql://localhost:5454/Chatbot
-        username: root
-        password: root
+      url: jdbc:postgresql://localhost:5454/Chatbot
+      username: root
+      password: root
   jpa:
     hibernate:
       ddl-auto: create
@@ -77,3 +77,18 @@ fag:
 email-address-of-the-admin-supervising-the:
   activity: admin1234@gmail.com
   contact-form: admin1234@gmail.com
+
+packs:
+  default-count: 3
+  1:
+    name: free
+    advantages: Access to open data from the main portal. View public dashboards. Read open data. Limited search functions.
+    currency-monthly-yearly-price: azn|0|0-usd|0|0-rub|0|0
+  2:
+    name: standard
+    advantages: Download additional analytical capabilities and reports. Download documents in PDF and Excel format. Advanced search and filter functions. Receive email notifications.
+    currency-monthly-yearly-price: azn|5|50-usd|3.5|35-rub|500|5000
+  3:
+    name: premium
+    advantages: Additional analytical capabilities and report downloads. Download documents in PDF and Excel format. Advanced search and filter functions. Receive email notifications. Data upload and sharing. Access to exclusive dashboards. Fast support (priority support).
+    currency-monthly-yearly-price: azn|10|100-usd|7|70-rub|1000|10000

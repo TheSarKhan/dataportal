@@ -3,7 +3,6 @@ package org.example.dataprotal.service;
 import org.example.dataprotal.dto.response.PaymentHistoryResponse;
 import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
-import org.example.dataprotal.enums.Subscription;
 import org.example.dataprotal.model.user.PaymentHistory;
 import org.example.dataprotal.model.user.User;
 
@@ -18,7 +17,12 @@ public interface PaymentHistoryService {
 
     List<PaymentHistory> getAll();
 
-    List<PaymentHistory> filterPayments(User user, PaymentStatus status, PaymentType paymentType,
-                                        Subscription subscription, LocalDate fromDate, LocalDate toDate,
-                                        BigDecimal minAmount, BigDecimal maxAmount);
+    List<PaymentHistory> filterPayments(User user,
+                                        PaymentStatus status,
+                                        PaymentType paymentType,
+                                        Long subscriptionId,
+                                        LocalDate fromDate,
+                                        LocalDate toDate,
+                                        BigDecimal minAmount,
+                                        BigDecimal maxAmount);
 }

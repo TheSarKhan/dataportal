@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.example.dataprotal.enums.Language;
 import org.example.dataprotal.enums.Role;
-import org.example.dataprotal.enums.Subscription;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -75,8 +74,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     Language language;
 
-    @Enumerated(EnumType.STRING)
-    Subscription subscription;
+    Long subscriptionId;
 
     boolean isSubscriptionMonthly;
 
@@ -85,7 +83,7 @@ public class User {
     @PrePersist
     public void prePersist() {
         role = Role.USER;
-        subscription = Subscription.FREE;
+        subscriptionId = 1L;
         language = Language.EN;
         isActive = true;
     }

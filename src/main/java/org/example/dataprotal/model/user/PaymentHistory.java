@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
-import org.example.dataprotal.enums.Subscription;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,8 +31,7 @@ public class PaymentHistory {
     @Enumerated(EnumType.STRING)
     PaymentStatus paymentStatus;
 
-    @Enumerated(EnumType.STRING)
-    Subscription subscription;
+    Long subscriptionId;
 
     Long userId;
 

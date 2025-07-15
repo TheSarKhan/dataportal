@@ -3,7 +3,6 @@ package org.example.dataprotal.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dataprotal.dto.request.ContactFormRequest;
-import org.example.dataprotal.dto.request.NotificationRequest;
 import org.example.dataprotal.dto.response.ContactFormResponse;
 import org.example.dataprotal.dto.response.FaqResponse;
 import org.example.dataprotal.dto.response.UserInstructionResponse;
@@ -96,10 +95,7 @@ public class SupportServiceImpl implements SupportService {
         Locale locale = new Locale(language.toLowerCase());
         String contactFormHeader = messageSource.getMessage("support.categories.cf", null, locale);
         List<String> applicationNames = Arrays.stream(ApplicationType.values())
-                .map(value -> translateService.translate(
-                        "en",
-                        locale.getLanguage(),
-                        value.name().toLowerCase()))
+                .map(ApplicationType::name)
                 .toList();
         return new ContactFormResponse(contactFormHeader, applicationNames);
     }
@@ -112,9 +108,9 @@ public class SupportServiceImpl implements SupportService {
                 " " + request.surname() +
                 " " + request.fatherName() +
                 " (" + request.email() + ") " +
-                translateForAdmin("en", " has submitted ", admin) + " " +
+                " has submitted " +
                 request.applicationType() +
-                translateForAdmin("en", " via the contact form.", admin) + "(" +
+                " via the contact form." + "(" +
                 request.phoneNumber() + ")";
         notificationService.sendContactForm(header,
                 translateForAdmin(request.language().toLowerCase(),

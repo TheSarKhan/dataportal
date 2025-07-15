@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.response.PaymentHistoryResponse;
 import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
-import org.example.dataprotal.enums.Subscription;
 import org.example.dataprotal.model.user.PaymentHistory;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.UserService;
@@ -57,13 +56,13 @@ public class PaymentHistoryController {
     )
     public List<PaymentHistory> filterPayments(@RequestParam(required = false) PaymentStatus status,
                                                @RequestParam(required = false) PaymentType paymentType,
-                                               @RequestParam(required = false) Subscription subscription,
+                                               @RequestParam(required = false) Long subscriptionId,
                                                @RequestParam(required = false) LocalDate fromDate,
                                                @RequestParam(required = false) LocalDate toDate,
                                                @RequestParam(required = false) BigDecimal minAmount,
                                                @RequestParam(required = false) BigDecimal maxAmount
     ) throws AuthException {
         return paymentHistoryService.filterPayments(userService.getCurrentUser(),
-                status, paymentType, subscription, fromDate, toDate, minAmount, maxAmount);
+                status, paymentType, subscriptionId, fromDate, toDate, minAmount, maxAmount);
     }
 }
