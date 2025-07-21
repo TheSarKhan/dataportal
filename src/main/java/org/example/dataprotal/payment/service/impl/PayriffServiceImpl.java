@@ -13,8 +13,10 @@ import org.example.dataprotal.payment.service.PayriffService;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,19 +27,18 @@ public class PayriffServiceImpl implements PayriffService {
     private final PayriffConfig payriffConfig;
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Override
-    public String createInvoice(PayriffInvoiceRequest payriffInvoiceRequest, String token) throws ResourceCanNotFoundException, InvoiceCanNotBeCreatedException {
-        String email = jwtService.extractEmail(token);
-        User user = userRepository.findByEmail(email).orElseThrow(() -> {
-            log.error("User can not found with email {}", email);
-            return new ResourceCanNotFoundException("User can not found with email {}" + email);
-        });
+    public String createInvoiceWithUser(PayriffInvoiceRequest payriffInvoiceRequest, User user) throws InvoiceCanNotBeCreatedException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer" + token);
+        headers.set("Authorization", "Bearer " + jwtService.generateAccessToken(user.getEmail(), null));
 
+        return makePayment(payriffInvoiceRequest, user, headers);
+    }
+
+    private String makePayment(PayriffInvoiceRequest payriffInvoiceRequest, User user, HttpHeaders headers) throws InvoiceCanNotBeCreatedException {
         HttpEntity<Map<String, Object>> httpEntity = getMapHttpEntity(payriffInvoiceRequest, user, headers);
 
         ResponseEntity<PayriffInvoiceResponse> responseResponseEntity = restTemplate.postForEntity(
@@ -47,13 +48,14 @@ public class PayriffServiceImpl implements PayriffService {
             if (body.getPayriffData() != null) {
                 return body.getPayriffData().getInvoiceUrl();
             }
-
         }
         throw new InvoiceCanNotBeCreatedException("Invoice can not be created");
     }
 
     private HttpEntity<Map<String, Object>> getMapHttpEntity(PayriffInvoiceRequest payriffInvoiceRequest, User user, HttpHeaders headers) {
         Map<String, Object> payloads = new HashMap<>();
+        payloads.put("merchant", payriffConfig.getMerchantId());
+        payloads.put("signature", generateSignature(payriffInvoiceRequest.getOrderId(), payriffInvoiceRequest.getAmount()));
         payloads.put("firstName", user.getFirstName());
         payloads.put("lastName", user.getLastName());
         payloads.put("amount", payriffInvoiceRequest.getAmount());
@@ -68,5 +70,14 @@ public class PayriffServiceImpl implements PayriffService {
 
         return new HttpEntity<>(payloads, headers);
     }
+
+    private String generateSignature(String orderId, String amount) {
+        if (orderId == null || orderId.isBlank() || amount == null || amount.isBlank()) {
+            throw new IllegalArgumentException("Order Id and amount must not be blank");
+        }
+        String data = payriffConfig.getMerchantId() + orderId + amount + payriffConfig.getApiKey();
+        return DigestUtils.md5DigestAsHex(data.getBytes(StandardCharsets.UTF_8));
+    }
+
 }
 

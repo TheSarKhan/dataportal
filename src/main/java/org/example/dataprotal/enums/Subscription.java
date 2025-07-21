@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public enum Subscription {
     FREE(BigDecimal.valueOf(0), BigDecimal.valueOf(0)),
     STANDARD(BigDecimal.valueOf(10), BigDecimal.valueOf(96)),
-    PREMIUM(BigDecimal.valueOf(0), BigDecimal.valueOf(0));
+    PREMIUM(BigDecimal.valueOf(25), BigDecimal.valueOf(240));
 
     BigDecimal priceForOneMonth;
 

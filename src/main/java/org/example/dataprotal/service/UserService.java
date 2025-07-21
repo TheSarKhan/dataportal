@@ -1,10 +1,13 @@
 package org.example.dataprotal.service;
 
 import jakarta.security.auth.message.AuthException;
+import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
 import org.example.dataprotal.dto.response.*;
 import org.example.dataprotal.dto.request.ProfileUpdateRequest;
+import org.example.dataprotal.exception.InvoiceCanNotBeCreatedException;
 import org.example.dataprotal.model.user.User;
+import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,6 +23,8 @@ public interface UserService {
     List<UserResponseForAdmin> getAllUsers() throws AuthException;
 
     UserResponseForAdmin getUserById(Long id) throws AuthException;
+
+    UserResponseForAdmin getUserByEmail(String email) throws AuthException;
 
     User getById(Long id);
 
@@ -38,9 +43,15 @@ public interface UserService {
 
     UserResponseForAdmin deactivateUserWithId(Long id, String reason) throws AuthException;
 
+    UserResponseForAdmin deactivateUserWithEmail(String email, String reason) throws AuthException;
+
     UserResponseForAdmin activateUserWithId(Long id) throws AuthException;
 
+    UserResponseForAdmin activateUserWithEmail(String email) throws AuthException;
+
     UserResponseForAdmin changeUserRole(Long id, String role) throws AuthException;
+
+    String changeSubscription(ChangeSubscriptionRequest request, PayriffInvoiceRequest paymentRequest) throws AuthException, InvoiceCanNotBeCreatedException;
 
     ProfileSecurityResponse updateSecurity(ProfileSecurityRequest request) throws AuthException;
 }

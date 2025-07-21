@@ -1,28 +1,35 @@
 package org.example.dataprotal.service;
 
+import jakarta.security.auth.message.AuthException;
 import org.example.dataprotal.dto.request.NotificationRequest;
 import org.example.dataprotal.dto.response.NotificationResponse;
 import org.example.dataprotal.dto.response.NotificationResponseForOverView;
 import org.example.dataprotal.enums.Language;
-import org.example.dataprotal.model.user.User;
 
 import java.util.List;
 
 public interface NotificationService {
     String sendNotificationForActivateProfile(String email);
 
-    NotificationResponse sendNotification(NotificationRequest request, Language language);
+    NotificationResponse sendNotification(NotificationRequest request);
 
-    List<NotificationResponseForOverView> getNotSeenNotifications(User currentUser);
+    void sendContactForm(String title, String message, Language language, Long id);
 
-    NotificationResponse getNotificationById(Long id);
+    List<NotificationResponseForOverView> getNotSeenNotifications() throws AuthException;
+
+    List<NotificationResponse> getAllNotifications() throws AuthException;
+
+    List<NotificationResponse> getAllSendNotification() throws AuthException;
+
+    NotificationResponse getNotificationById(Long id) throws AuthException;
 
     List<NotificationResponse> searchNotificationByTitle(String title);
 
-    void deleteNotificationById();
+    NotificationResponse updateNotification(Long notificationId, NotificationRequest request);
 
-    void deleteAllNotifications();
+    List<NotificationResponse> deleteNotificationById(Long id) throws AuthException;
 
-    void translateNotification();
+    String deleteAllNotifications() throws AuthException;
 
+    NotificationResponse translateNotification(Long id, String language) throws AuthException;
 }

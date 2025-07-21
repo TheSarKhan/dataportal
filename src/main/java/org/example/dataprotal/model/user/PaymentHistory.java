@@ -1,35 +1,41 @@
 package org.example.dataprotal.model.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
 import org.example.dataprotal.enums.Subscription;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "payment_history")
 @Data
+@Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Table(name = "payment_history")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentHistory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private BigDecimal amount;
-    private LocalDate date;
+    Long id;
+
+    BigDecimal amount;
+
+    LocalDateTime date;
+
     @Enumerated(EnumType.STRING)
-    private PaymentType paymentType;
+    PaymentType paymentType;
+
     @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
+    PaymentStatus paymentStatus;
+
     @Enumerated(EnumType.STRING)
-    private Subscription subscription;
-    private Long userId;
+    Subscription subscription;
+
+    Long userId;
+
+    String billUrl;
 }

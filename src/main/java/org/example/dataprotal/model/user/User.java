@@ -78,6 +78,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     Subscription subscription;
 
+    boolean isSubscriptionMonthly;
+
+    LocalDateTime nextPaymentTime;
+
     @PrePersist
     public void prePersist() {
         role = Role.USER;

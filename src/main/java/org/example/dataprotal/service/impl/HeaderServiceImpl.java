@@ -24,7 +24,7 @@ public class HeaderServiceImpl implements HeaderService {
         log.info("Get profile data for header");
         User currentUser = userService.getCurrentUser();
         List<NotificationResponseForOverView> unseenNotifications =
-                notificationService.getNotSeenNotifications(currentUser);
+                notificationService.getNotSeenNotifications();
         return new HeaderResponse(
                 currentUser.getLanguage(),
                 unseenNotifications.size(),

@@ -9,7 +9,11 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.2.1</version>
+<<<<<<< HEAD
         <relativePath/>
+=======
+        <relativePath/> <!-- lookup parent from repository -->
+>>>>>>> bb1843dcb2fa60c3a0a39c2426226279baa1e7fd
     </parent>
 
     <groupId>com.sarkhan</groupId>

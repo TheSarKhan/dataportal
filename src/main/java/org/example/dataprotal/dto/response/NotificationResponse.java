@@ -5,7 +5,8 @@ import org.example.dataprotal.enums.Language;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public record NotificationResponse(String title,
+public record NotificationResponse(Long id,
+                                   String title,
                                    String message,
                                    Long senderId,
                                    String senderEmail,
