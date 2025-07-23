@@ -30,10 +30,10 @@ public class SupportServiceImpl implements SupportService {
 
     private final NotificationService notificationService;
 
-    @Value("${fag.headers}")
+    @Value("${faq.headers}")
     String headerCount;
 
-    @Value("${fag.subheaders}")
+    @Value("${faq.subheaders}")
     String subheaderCount;
 
     @Value("${email-address-of-the-admin-supervising-the.contact-form}")
@@ -42,9 +42,9 @@ public class SupportServiceImpl implements SupportService {
     @Override
     public List<String> getCategories(String language) {
         log.info("Get support categories");
-        Locale locale = new Locale(language.toLowerCase());
+        Locale locale = generateLocale(language);
 
-        return List.of(messageSource.getMessage("support.categories.fag", null, locale),
+        return List.of(messageSource.getMessage("support.categories.faq", null, locale),
                 messageSource.getMessage("support.categories.ui", null, locale),
                 messageSource.getMessage("support.categories.cf", null, locale));
     }
@@ -53,7 +53,7 @@ public class SupportServiceImpl implements SupportService {
     public FaqResponse getFagInfo(String language) {
         log.info("Get support headers and subheaders");
 
-        Locale locale = new Locale(language.toLowerCase());
+        Locale locale = generateLocale(language);
 
         Map<String, Map<String, String>> headersSubHeadersAndTheirContentMap = new HashMap<>();
         int headers = Integer.parseInt(headerCount);
@@ -83,7 +83,7 @@ public class SupportServiceImpl implements SupportService {
     @Override
     public UserInstructionResponse getUserInstruction(String language) {
         log.info("Get user instruction");
-        Locale locale = new Locale(language.toLowerCase());
+        Locale locale = generateLocale(language);
         String userInstructionHeader = messageSource.getMessage("support.categories.ui", null, locale);
         String message = messageSource.getMessage("user-instruction.message", null, locale);
         return new UserInstructionResponse(userInstructionHeader, message);
@@ -92,7 +92,7 @@ public class SupportServiceImpl implements SupportService {
     @Override
     public ContactFormResponse getContactForm(String language) {
         log.info("Get contact form");
-        Locale locale = new Locale(language.toLowerCase());
+        Locale locale = generateLocale(language);
         String contactFormHeader = messageSource.getMessage("support.categories.cf", null, locale);
         List<String> applicationNames = Arrays.stream(ApplicationType.values())
                 .map(ApplicationType::name)
@@ -118,7 +118,17 @@ public class SupportServiceImpl implements SupportService {
                 admin.getLanguage(),
                 admin.getId());
         return messageSource.getMessage("contact-form.message.success",
-                null, new Locale(request.language().toLowerCase()));
+                null, generateLocale(request.language()));
+    }
+
+    private static Locale generateLocale(String language) {
+        Locale locale= new Locale("en");
+        if (language != null &&
+                (language.equalsIgnoreCase("en") ||
+                        language.equalsIgnoreCase("az") ||
+                        language.equalsIgnoreCase("ru")))
+            locale = new Locale(language.toLowerCase());
+        return locale;
     }
 
     private String translateForAdmin(String to, String text, User admin) {

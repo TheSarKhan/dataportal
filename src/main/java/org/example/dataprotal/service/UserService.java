@@ -1,5 +1,6 @@
 package org.example.dataprotal.service;
 
+import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
 import org.example.dataprotal.dto.request.ProfileSecurityRequest;
@@ -28,14 +29,14 @@ public interface UserService {
 
     User getById(Long id);
 
-    List<UserResponseForAdmin> searchUserByName(String name) throws AuthException;
+    List<UserResponseForAdmin> searchUserByName(String name);
 
     ProfileSettingsResponse getProfileSettings() throws AuthException;
 
     ProfileSecurityResponse getProfileSecurity() throws AuthException;
 
-    ProfileResponse updateProfile(ProfileUpdateRequest profileUpdateRequest,
-                                  MultipartFile profileImage) throws AuthException, IOException;
+    String  updateProfile(ProfileUpdateRequest profileUpdateRequest,
+                                  MultipartFile profileImage) throws AuthException, IOException, MessagingException;
 
     ProfileResponse updateLanguage(String language) throws AuthException;
 

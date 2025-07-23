@@ -8,5 +8,5 @@ import java.util.List;
 public interface CloudinaryService {
     String uploadFile(MultipartFile file, String folder) throws IOException;
     List<String> uploadFiles(List<MultipartFile> files, String folder) throws IOException;
-
+    void deleteFile(String url) throws IOException;
 }

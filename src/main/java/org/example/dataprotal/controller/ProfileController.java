@@ -3,6 +3,7 @@ package org.example.dataprotal.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import org.example.dataprotal.dto.request.ChangeSubscriptionRequest;
@@ -69,6 +70,14 @@ public class ProfileController {
             description = "Returns profile settings of the current user")
     public ResponseEntity<ProfileSettingsResponse> getProfileSettings() throws AuthException {
         return ResponseEntity.ok(userService.getProfileSettings());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/search/name/{name}")
+    @Operation(summary = "Search profile by name",
+            description = "Returns profile of the entered name and similar ones")
+    public ResponseEntity<List<UserResponseForAdmin>> searchProfileByName(@PathVariable String name){
+        return ResponseEntity.ok(userService.searchUserByName(name));
     }
 
     @GetMapping("/security")
@@ -155,8 +164,8 @@ public class ProfileController {
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update profile",
             description = "Updates profile information along with profile image")
-    public ResponseEntity<ProfileResponse> updateProfile(@RequestPart ProfileUpdateRequest profileUpdateRequest,
-                                                         @RequestPart MultipartFile profileImage) throws AuthException, IOException {
+    public ResponseEntity<String> updateProfile(@RequestPart ProfileUpdateRequest profileUpdateRequest,
+                                                         @RequestPart MultipartFile profileImage) throws AuthException, IOException, MessagingException {
         return ResponseEntity.ok(userService.updateProfile(profileUpdateRequest, profileImage));
     }
 }

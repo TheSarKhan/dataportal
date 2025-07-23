@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-    @Query(value = "select * from users where name % :name", nativeQuery = true)
+    @Query(value = "select * from users where similarity(CONCAT(firstName, ' ', lastName), :name) > 0.3", nativeQuery = true)
     List<User> searchUserByName(String name);
 }

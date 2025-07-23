@@ -1,6 +1,7 @@
 package org.example.dataprotal.service.impl;
 
 import com.cloudinary.utils.StringUtils;
+import jakarta.mail.MessagingException;
 import jakarta.security.auth.message.AuthException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.example.dataprotal.dto.response.ProfileResponse;
 import org.example.dataprotal.dto.response.ProfileSecurityResponse;
 import org.example.dataprotal.dto.response.ProfileSettingsResponse;
 import org.example.dataprotal.dto.response.UserResponseForAdmin;
+import org.example.dataprotal.email.service.EmailService;
 import org.example.dataprotal.enums.Language;
 import org.example.dataprotal.enums.PaymentStatus;
 import org.example.dataprotal.enums.PaymentType;
@@ -25,11 +27,13 @@ import org.example.dataprotal.model.user.Subscription;
 import org.example.dataprotal.model.user.User;
 import org.example.dataprotal.payment.dto.PayriffInvoiceRequest;
 import org.example.dataprotal.payment.service.PayriffService;
+import org.example.dataprotal.redis.RedisService;
 import org.example.dataprotal.repository.user.UserRepository;
 import org.example.dataprotal.service.CloudinaryService;
 import org.example.dataprotal.service.PaymentHistoryService;
 import org.example.dataprotal.service.SubscriptionService;
 import org.example.dataprotal.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -64,6 +68,13 @@ public class UserServiceImpl implements UserService {
 
     private final RecaptchaConfig recaptchaConfig;
 
+    private final RedisService redisService;
+
+    private final EmailService emailService;
+
+    @Value("${spring.application.base-url}")
+    private String baseUrl;
+
     @Override
     public User getByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(() -> {
@@ -84,8 +95,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ProfileResponse getCurrentProfile() throws AuthException {
-        log.info("Get current profile : {}", getCurrentUser().getFirstName());
-        return userToProfileResponse(getCurrentUser());
+        User currentUser = getCurrentUser();
+        log.info("Get current profile : {}", currentUser.getFirstName());
+        return userToProfileResponse(currentUser);
     }
 
     @Override
@@ -94,6 +106,14 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll().stream()
                 .map(UserMapper::userToUserResponseForAdmin)
                 .toList();
+    }
+
+    @Override
+    public User getById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> {
+            log.error("User not found with id : {}", id);
+            return new NoSuchElementException("User not found with id : " + id);
+        });
     }
 
     @Override
@@ -106,14 +126,6 @@ public class UserServiceImpl implements UserService {
     public UserResponseForAdmin getUserByEmail(String email) {
         log.info("Get user by email : {}", email);
         return userToUserResponseForAdmin(getByEmail(email));
-    }
-
-    @Override
-    public User getById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> {
-            log.error("User not found with id : {}", id);
-            return new NoSuchElementException("User not found with id : " + id);
-        });
     }
 
     @Override
@@ -155,18 +167,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ProfileResponse updateProfile(ProfileUpdateRequest request,
-                                         MultipartFile profileImage) throws AuthException, IOException {
+    public String  updateProfile(ProfileUpdateRequest request,
+                                         MultipartFile profileImage) throws AuthException, IOException, MessagingException {
         log.info("Update profile : {}", request);
         User currentUser = getCurrentUser();
+        log.info("Current user : {}", currentUser.getEmail());
+        cloudinaryService.deleteFile(currentUser.getProfileImage());
         String url = cloudinaryService.uploadFile(profileImage, "4sim-profileImage");
         currentUser.setProfileImage(url);
-        currentUser.setEmail(request.email());
         currentUser.setPhoneNumber(request.phoneNumber());
         currentUser.setWorkplace(request.workplace());
         currentUser.setPosition(request.position());
         currentUser.setUpdatedAt(LocalDateTime.now());
-        return userToProfileResponse(userRepository.save(currentUser));
+        if (!currentUser.getEmail().equals(request.email())){
+            currentUser.setEmail(request.email());
+            currentUser.setVerified(false);
+            String verificationToken = UUID.randomUUID().toString();
+            log.info("TOKEN {}", verificationToken);
+            redisService.saveVerificationTokenToRedis(request.email(), verificationToken, 10);
+            String verificationUrl = baseUrl + "/api/v1/auth/verify?token=" + verificationToken;
+            emailService.sendVerificationEmail(request.email(), verificationUrl);
+            userRepository.save(currentUser);
+            return "Check your email to verify account";
+        }
+        userRepository.save(currentUser);
+        return "User updated successfully.";
     }
 
     @Override
