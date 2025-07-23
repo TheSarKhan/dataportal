@@ -167,12 +167,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public String  updateProfile(ProfileUpdateRequest request,
                                          MultipartFile profileImage) throws AuthException, IOException, MessagingException {
         log.info("Update profile : {}", request);
         User currentUser = getCurrentUser();
         log.info("Current user : {}", currentUser.getEmail());
-        cloudinaryService.deleteFile(currentUser.getProfileImage());
+        String oldProfileImageUrl = currentUser.getProfileImage();
         String url = cloudinaryService.uploadFile(profileImage, "4sim-profileImage");
         currentUser.setProfileImage(url);
         currentUser.setPhoneNumber(request.phoneNumber());
@@ -187,10 +188,13 @@ public class UserServiceImpl implements UserService {
             redisService.saveVerificationTokenToRedis(request.email(), verificationToken, 10);
             String verificationUrl = baseUrl + "/api/v1/auth/verify?token=" + verificationToken;
             emailService.sendVerificationEmail(request.email(), verificationUrl);
+            log.info("Verification email sent to {}", request.email());
             userRepository.save(currentUser);
+            cloudinaryService.deleteFile(oldProfileImageUrl);
             return "Check your email to verify account";
         }
         userRepository.save(currentUser);
+        cloudinaryService.deleteFile(oldProfileImageUrl);
         return "User updated successfully.";
     }
 
@@ -293,6 +297,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public ProfileSecurityResponse updateSecurity(ProfileSecurityRequest request) throws AuthException {
         log.info("Update security : {}", request);
         User currentUser = getCurrentUser();
