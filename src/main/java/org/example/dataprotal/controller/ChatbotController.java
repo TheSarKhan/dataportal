@@ -2,6 +2,7 @@ package org.example.dataprotal.controller;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.example.dataprotal.dto.request.CategoryRequest;
 import org.example.dataprotal.model.chatbot.Category;
 import org.example.dataprotal.model.chatbot.Question;
 import org.example.dataprotal.repository.chatbot.CategoryRepository;
@@ -25,10 +26,15 @@ public class ChatbotController {
 
     @PostMapping("/chat")
     public ResponseEntity<?> chat(@RequestBody Map<String, String> body) {
-        String userMessage = body.get("message");
+        String userMessage = body.get("question");  // 🔁 "message" değil, "question"
+        if (userMessage == null || userMessage.isBlank()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Sual boşdur"));
+        }
+
         String botResponse = botService.askBot(userMessage.toLowerCase());
         return ResponseEntity.ok(Collections.singletonMap("response", botResponse));
     }
+
 
     @GetMapping("/getAllCategories")
     public List<Category> getAllCategories() {
@@ -41,8 +47,10 @@ public class ChatbotController {
     }
 
     @PostMapping("/category/add")
-    public ResponseEntity<Category> addCategory(@RequestBody Category category) {
-        Category savedCategory = categoryRepository.save(category);
+    public ResponseEntity<Category> addCategory(@RequestBody CategoryRequest categoryRequest) {
+        Category newCategory=new Category();
+        newCategory.setCategoryName(categoryRequest.getCategoryName());
+        Category savedCategory = categoryRepository.save(newCategory);
         return ResponseEntity.ok(savedCategory);
     }
 
